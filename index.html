@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>EVYON V6 | VOICE CORE</title>
     <style>
-        /* --- ESTÉTICA BASE "DARK MATTER" --- */
+        /* --- ESTÉTICA BASE "DARK MATTER" (Igual que V1) --- */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600&family=Orbitron:wght@400;700&display=swap');
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -20,7 +20,6 @@
             color: #fff;
         }
 
-        /* --- FONDO ANIMADO SUTIL --- */
         .ambient-bg {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle at 50% 50%, #111827 0%, #000000 100%);
@@ -38,7 +37,7 @@
             -webkit-mask-image: radial-gradient(circle at center, black 30%, transparent 80%);
         }
 
-        /* --- PANTALLA LOGIN (Heredada V5.1 pero minimalista) --- */
+        /* --- LOGIN SCREEN --- */
         #login-screen {
             position: absolute; z-index: 10;
             text-align: center;
@@ -61,7 +60,7 @@
         }
         .login-input:focus { border-color: #3cd186; box-shadow: 0 0 15px rgba(60,209,134,0.2); }
 
-        /* --- LA ESFERA (THE ORB) --- */
+        /* --- ORB INTERFACE --- */
         #orb-interface {
             display: none; flex-direction: column; align-items: center; justify-content: center;
             opacity: 0; transition: opacity 1s ease;
@@ -72,10 +71,11 @@
             position: relative;
             width: 220px; height: 220px;
             display: flex; justify-content: center; align-items: center;
-            cursor: pointer; /* Clickable para pruebas */
+            cursor: pointer;
+            transition: transform 0.2s;
         }
+        .orb-container:active { transform: scale(0.95); }
 
-        /* El Núcleo Físico */
         .orb-core {
             width: 120px; height: 120px;
             border-radius: 50%;
@@ -85,7 +85,6 @@
             transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* Los Anillos de Energía (Halos) */
         .orb-ring {
             position: absolute; border-radius: 50%;
             border: 1px solid rgba(60, 209, 134, 0.3);
@@ -99,28 +98,21 @@
             z-index: 1; animation: pulse-slow 4s infinite ease-in-out;
         }
 
-        /* --- ESTADOS DE LA ESFERA (CLASES JS) --- */
-        
-        /* 1. IDLE (Reposo) */
+        /* ESTADOS VISUALES */
         .state-idle .orb-core { transform: scale(1); filter: hue-rotate(0deg); }
         
-        /* 2. LISTENING (Escuchando - Expansión) */
         .state-listening .orb-core { transform: scale(1.1); box-shadow: 0 0 50px rgba(60, 209, 134, 0.8); }
         .state-listening .ring-pulse { animation: pulse-fast 1.5s infinite; background: rgba(60, 209, 134, 0.3); }
 
-        /* 3. PROCESSING (Pensando - Giro Rápido / Color Azul Cian) */
         .state-processing .orb-core { 
-            background: radial-gradient(circle at 30% 30%, #22d3ee, #0891b2, #000); /* Azul Jarvis */
+            background: radial-gradient(circle at 30% 30%, #22d3ee, #0891b2, #000);
             transform: scale(0.9);
         }
-        .state-processing .ring-1 { animation: spin 1s linear infinite; border-color: #22d3ee; }
-        .state-processing .ring-2 { animation: spin-rev 1.5s linear infinite; border-color: #22d3ee; }
+        .state-processing .ring-1 { animation: spin 0.5s linear infinite; border-color: #22d3ee; }
+        .state-processing .ring-2 { animation: spin-rev 1s linear infinite; border-color: #22d3ee; }
 
-        /* 4. SPEAKING (Hablando - Vibración) */
         .state-speaking .orb-core { animation: speak-vibration 0.3s infinite; }
-        .state-speaking .grid-overlay { opacity: 0.5; transition: opacity 0.2s; }
 
-        /* --- TEXTO DE ESTADO --- */
         .status-text {
             margin-top: 60px;
             font-family: 'Orbitron', sans-serif;
@@ -129,18 +121,22 @@
             animation: text-flicker 3s infinite;
         }
 
-        /* --- ANIMACIONES KEYFRAMES --- */
+        /* Log de voz (Debug temporal) */
+        #voice-log {
+            margin-top: 20px; color: #3cd186; font-size: 16px; 
+            font-weight: 200; text-align: center; max-width: 80%;
+            min-height: 24px; opacity: 0.8;
+        }
+
         @keyframes spin { 100% { transform: rotate(360deg); } }
         @keyframes spin-rev { 100% { transform: rotate(-360deg); } }
         @keyframes pulse-slow { 0%, 100% { transform: scale(1); opacity: 0.3; } 50% { transform: scale(1.4); opacity: 0; } }
         @keyframes pulse-fast { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(1.8); opacity: 0; } }
         @keyframes speak-vibration { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
         @keyframes text-flicker { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-
     </style>
 </head>
 <body>
-
     <div class="ambient-bg"></div>
     <div class="grid-overlay"></div>
 
@@ -151,103 +147,139 @@
     </div>
 
     <div id="orb-interface">
-        <div class="orb-container" id="evyonOrb" onclick="cycleState()">
+        <div class="orb-container" id="evyonOrb" onclick="toggleListening()">
             <div class="orb-ring ring-pulse"></div>
             <div class="orb-ring ring-1"></div>
             <div class="orb-ring ring-2"></div>
             <div class="orb-core"></div>
         </div>
         <div class="status-text" id="statusLabel">SISTEMA EN LÍNEA</div>
-        
-        <input type="text" id="hiddenInput" style="opacity: 0; position: absolute; bottom: 0;">
+        <div id="voice-log"></div>
     </div>
 
     <script>
-        /* ----------------------------------------------------
-           1. CEREBRO HEREDADO (DATOS V5.1)
-           ---------------------------------------------------- */
         const INSTITUTION_DB = {
-            "tec": { pass: "TEC2106", name: "Iván (Estudiante)", mode: "default" },
-            "justin": { pass: "TEC2025", name: "Sensei Justin", mode: "spartan" },
-            "founder": { pass: "IVAN2106", name: "Sr. Iván (Founder)", mode: "jarvis" }
+            "tec": { pass: "TEC2106", name: "Iván (Estudiante)" },
+            "justin": { pass: "TEC2025", name: "Sensei Justin" },
+            "founder": { pass: "IVAN2106", name: "Sr. Iván (Founder)" }
         };
 
         let currentUser = null;
-        let currentState = 'idle'; // idle, listening, processing, speaking
-        
-        // Simulación de secuencia para pruebas visuales
-        const states = ['idle', 'listening', 'processing', 'speaking'];
-        let stateIndex = 0;
+        let recognition = null;
+        let isListening = false;
 
-        /* ----------------------------------------------------
-           2. SISTEMA DE LOGIN
-           ---------------------------------------------------- */
+        /* --- LOGIN SYSTEM --- */
         function handleLoginKey(e) {
             if (e.key === "Enter") {
                 const input = e.target.value;
                 const userKey = Object.keys(INSTITUTION_DB).find(key => INSTITUTION_DB[key].pass === input);
-
                 if (userKey) {
                     currentUser = INSTITUTION_DB[userKey];
                     triggerTransition();
                 } else {
-                    const msg = document.getElementById("login-msg");
-                    msg.style.opacity = 1;
-                    e.target.style.borderColor = "#ef4444";
-                    setTimeout(() => { msg.style.opacity = 0; e.target.style.borderColor = "#333"; }, 2000);
+                    showError();
                 }
             }
         }
 
+        function showError() {
+            const msg = document.getElementById("login-msg");
+            msg.style.opacity = 1;
+            setTimeout(() => msg.style.opacity = 0, 2000);
+        }
+
         function triggerTransition() {
-            const loginScreen = document.getElementById("login-screen");
-            const orbInterface = document.getElementById("orb-interface");
-            
-            loginScreen.style.opacity = 0;
-            loginScreen.style.transform = "scale(0.9)";
-            
+            document.getElementById("login-screen").style.opacity = 0;
             setTimeout(() => {
-                loginScreen.style.display = "none";
-                orbInterface.style.display = "flex";
-                // Pequeño delay para el fade-in
-                setTimeout(() => { orbInterface.style.opacity = 1; }, 50);
-                
-                // Mensaje de bienvenida en consola (luego será audio)
-                console.log(`%c BIENVENIDO ${currentUser.name}`, "color: #3cd186; font-size: 20px;");
+                document.getElementById("login-screen").style.display = "none";
+                const iface = document.getElementById("orb-interface");
+                iface.style.display = "flex";
+                setTimeout(() => iface.style.opacity = 1, 50);
                 document.getElementById("statusLabel").innerText = `BIENVENIDO, ${currentUser.name.split(' ')[0].toUpperCase()}`;
+                
+                // Inicializar reconocimiento de voz al entrar
+                initVoice();
             }, 500);
         }
 
-        /* ----------------------------------------------------
-           3. MOTOR VISUAL (ORB ENGINE)
-           ---------------------------------------------------- */
+        /* --- THE EAR: VOICE RECOGNITION --- */
+        function initVoice() {
+            // Compatibilidad con Chrome y Safari
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!SpeechRecognition) {
+                document.getElementById("voice-log").innerText = "⚠️ Tu navegador no soporta voz.";
+                return;
+            }
+
+            recognition = new SpeechRecognition();
+            recognition.lang = 'es-ES';
+            recognition.interimResults = false; // Solo resultados finales
+            recognition.maxAlternatives = 1;
+
+            recognition.onstart = () => {
+                isListening = true;
+                setOrbState('listening');
+                document.getElementById("voice-log").innerText = "...";
+            };
+
+            recognition.onend = () => {
+                isListening = false;
+                // Si no estamos procesando, volver a idle
+                if (document.getElementById("statusLabel").innerText !== "ANALIZANDO...") {
+                    setOrbState('idle');
+                }
+            };
+
+            recognition.onresult = (event) => {
+                const speechResult = event.results[0][0].transcript;
+                console.log("Escuchado:", speechResult);
+                
+                // Feedback visual inmediato
+                document.getElementById("voice-log").innerText = `"${speechResult}"`;
+                
+                // Simular transición a pensamiento
+                setOrbState('processing');
+                
+                // AQUÍ ES DONDE CONECTAREMOS EL CEREBRO EN LA FASE 3
+                setTimeout(() => {
+                    setOrbState('speaking');
+                    setTimeout(() => setOrbState('idle'), 2000);
+                }, 2000);
+            };
+
+            recognition.onerror = (event) => {
+                console.error("Error de voz:", event.error);
+                setOrbState('idle');
+                document.getElementById("voice-log").innerText = "Error de micrófono";
+            };
+        }
+
+        function toggleListening() {
+            if (!recognition) return;
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        }
+
         function setOrbState(newState) {
             const container = document.getElementById("evyonOrb");
             const label = document.getElementById("statusLabel");
             
-            // Limpiar clases anteriores
             container.classList.remove("state-idle", "state-listening", "state-processing", "state-speaking");
-            
-            // Añadir nueva clase
             container.classList.add(`state-${newState}`);
-            currentState = newState;
 
-            // Actualizar texto
             switch(newState) {
-                case 'idle': label.innerText = "EN ESPERA"; break;
+                case 'idle': label.innerText = "EN ESPERA"; label.style.color = "#64748b"; break;
                 case 'listening': label.innerText = "ESCUCHANDO..."; label.style.color = "#3cd186"; break;
-                case 'processing': label.innerText = "ANALIZANDO PATRONES"; label.style.color = "#22d3ee"; break;
-                case 'speaking': label.innerText = "TRANSMITIENDO"; label.style.color = "#fff"; break;
+                case 'processing': label.innerText = "ANALIZANDO..."; label.style.color = "#22d3ee"; break;
+                case 'speaking': label.innerText = "RESPONDIENDO"; label.style.color = "#fff"; break;
             }
         }
-
-        // FUNCIÓN DE PRUEBA: Clic en la esfera para rotar estados
-        function cycleState() {
-            stateIndex = (stateIndex + 1) % states.length;
-            setOrbState(states[stateIndex]);
-        }
-
-        // Iniciar en Idle
+        
+        // Estado inicial
         setOrbState('idle');
 
     </script>
