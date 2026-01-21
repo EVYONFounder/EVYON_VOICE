@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EVYON V7.5 | UNLOCKED</title>
+    <title>EVYON V8 | EMERALD</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap');
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
@@ -19,19 +19,23 @@
             color: #fff;
         }
 
+        /* FONDO MEJORADO */
         .bg-vignette {
             position: absolute; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, #0f1520 0%, #000 80%);
+            background: radial-gradient(circle at center, #051014 0%, #000 90%); /* Fondo verdoso muy oscuro */
             z-index: -5;
         }
         
-        canvas { position: absolute; top: 0; left: 0; z-index: 1; filter: blur(0.5px) contrast(1.2); }
+        canvas { position: absolute; top: 0; left: 0; z-index: 1; filter: contrast(1.5) brightness(1.2); }
 
         /* HUD */
         .hud-overlay { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 5; padding: 20px; }
-        .corner { position: absolute; width: 40px; height: 40px; border: 2px solid rgba(60, 209, 134, 0.3); opacity: 0.6; transition: all 0.5s ease; }
-        .speaking .corner { border-color: #22d3ee; box-shadow: 0 0 20px rgba(34, 211, 238, 0.6); }
-        .error-mode .corner { border-color: #ef4444; box-shadow: 0 0 20px rgba(239, 68, 68, 0.6); }
+        .corner { position: absolute; width: 50px; height: 50px; border: 2px solid rgba(0, 255, 157, 0.2); transition: all 0.3s ease; }
+        
+        /* ESTADOS VISUALES DEL HUD */
+        .hud-listening .corner { border-color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.5); }
+        .hud-speaking .corner { border-color: #00ff9d; box-shadow: 0 0 20px rgba(0, 255, 157, 0.6); }
+        .hud-error .corner { border-color: #ff0055; }
         
         .tl { top: 20px; left: 20px; border-right: none; border-bottom: none; }
         .tr { top: 20px; right: 20px; border-left: none; border-bottom: none; }
@@ -46,16 +50,14 @@
         }
 
         .interaction-zone {
-            width: 300px; height: 300px; border-radius: 50%;
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 100%; height: 100%; position: absolute; top: 0; left: 0;
             cursor: pointer; z-index: 20;
         }
 
         .status-text {
             position: absolute; bottom: 15%;
-            font-size: 18px; letter-spacing: 8px; font-weight: 600;
-            color: rgba(60, 209, 134, 0.8);
-            text-shadow: 0 0 10px rgba(60, 209, 134, 0.5);
+            font-size: 20px; letter-spacing: 6px; font-weight: 700;
+            color: #00ff9d; text-shadow: 0 0 15px rgba(0, 255, 157, 0.6);
             text-transform: uppercase; pointer-events: none; transition: color 0.3s;
             text-align: center; width: 100%;
         }
@@ -63,14 +65,15 @@
         /* LOGIN */
         #login-screen {
             position: absolute; z-index: 20; text-align: center;
-            background: rgba(0,0,0,0.9); width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); width: 100%; height: 100%;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
         .login-input {
-            background: transparent; border: 1px solid rgba(60, 209, 134, 0.5); 
-            padding: 15px; color: #fff; font-family: 'Rajdhani', sans-serif; font-size: 24px;
+            background: transparent; border: 1px solid #00ff9d; 
+            padding: 15px; color: #00ff9d; font-family: 'Rajdhani', sans-serif; font-size: 24px;
             text-align: center; letter-spacing: 8px; width: 280px; outline: none;
-            box-shadow: 0 0 30px rgba(60,209,134,0.1); text-transform: uppercase; margin-top: 20px; border-radius: 4px;
+            box-shadow: 0 0 20px rgba(0, 255, 157, 0.2); 
+            text-transform: uppercase; margin-top: 20px; border-radius: 4px;
         }
 
     </style>
@@ -87,8 +90,8 @@
     </div>
 
     <div id="login-screen">
-        <h1 style="color:#fff; font-weight:300; letter-spacing:12px; font-size:32px; opacity:0.9;">EVYON <span style="color:#3cd186; font-weight:700;">V7.5</span></h1>
-        <input type="password" id="password" class="login-input" placeholder="CODE" onkeydown="handleLoginKey(event)">
+        <h1 style="color:#fff; font-weight:400; letter-spacing:10px; font-size:40px;">EVYON <span style="color:#00ff9d; font-weight:700;">V8</span></h1>
+        <input type="password" id="password" class="login-input" placeholder="ACCESS" onkeydown="handleLoginKey(event)">
     </div>
 
     <div id="orb-interface">
@@ -97,28 +100,34 @@
     </div>
 
     <script>
-        /* ================= CONFIG ================= */
+        /* ================= CONFIGURACIÓN ================= */
         const INSTITUTION_DB = { "tec": { pass: "TEC2106", name: "Iván" }, "founder": { pass: "IVAN2106", name: "Sr. Iván" } };
         let apiKey = localStorage.getItem("evyon_api_key");
-        let currentUser = null;
         let isListening = false;
+        let isSpeaking = false; // Nuevo flag para evitar congelamientos
         
-        let targetColor = { r: 60, g: 209, b: 134 }; 
-        let currentColor = { r: 60, g: 209, b: 134 }; 
-        let rotationSpeed = 0.003;
-        let pulseIntensity = 0;
-        let particleSizeBase = 1.5;
-        let conversationHistory = [];
+        // COLORES (El nuevo Verde Esmeralda Tecnológico)
+        const COL_EMERALD = { r: 0, g: 255, b: 157 }; // #00ff9d
+        const COL_WHITE = { r: 255, g: 255, b: 255 };
+        const COL_CYAN = { r: 0, g: 200, b: 255 };
+        const COL_ERROR = { r: 255, g: 0, b: 85 };
 
-        // SILENT MP3 (Para engañar al navegador y abrir el canal de audio)
+        let targetColor = COL_EMERALD; 
+        let currentColor = COL_EMERALD; 
+        
+        let rotationSpeed = 0.002;
+        let pulseIntensity = 0;
+        let sphereScale = 1.0; // Para efecto de expansión
+        
+        let conversationHistory = [];
         const SILENT_MP3 = "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMD//////////////////////////////////wAAADFMYXZjNTguMTM0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASAAVrGHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//OECQAAAAAgAAAAAAALAAAAAAABAAABAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//OECQAAAAAAAAAAAAAAAAAAAAABAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//OECQAAAAAAAAAAAAAAAAAAAAABAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 
-        /* ================= VISUALS (GLASS CORE) ================= */
+        /* ================= MOTOR 3D "EMERALD GLASS" ================= */
         const canvas = document.getElementById('glassCore');
         const ctx = canvas.getContext('2d');
         let width, height;
         let particles = [];
-        const numParticles = 300; 
+        const numParticles = 350; // Más denso para efecto vidrio
 
         function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
         window.addEventListener('resize', resize);
@@ -127,139 +136,199 @@
         for(let i=0; i<numParticles; i++) {
             const theta = Math.acos(-1 + (2 * i) / numParticles);
             const phi = Math.sqrt(numParticles * Math.PI) * theta;
-            particles.push({ x: 180 * Math.sin(theta) * Math.cos(phi), y: 180 * Math.sin(theta) * Math.sin(phi), z: 180 * Math.cos(theta) });
+            particles.push({ 
+                x: 180 * Math.sin(theta) * Math.cos(phi), 
+                y: 180 * Math.sin(theta) * Math.sin(phi), 
+                z: 180 * Math.cos(theta) 
+            });
         }
 
         function lerp(start, end, t) { return start * (1 - t) + end * t; }
 
-        function drawGlassCore() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; ctx.fillRect(0, 0, width, height);
-            currentColor.r = lerp(currentColor.r, targetColor.r, 0.05);
-            currentColor.g = lerp(currentColor.g, targetColor.g, 0.05);
-            currentColor.b = lerp(currentColor.b, targetColor.b, 0.05);
+        function drawEmeraldCore() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.25)'; // Cola un poco más larga para fluidez
+            ctx.fillRect(0, 0, width, height);
+            
+            // Transición de color suave
+            currentColor.r = lerp(currentColor.r, targetColor.r, 0.08);
+            currentColor.g = lerp(currentColor.g, targetColor.g, 0.08);
+            currentColor.b = lerp(currentColor.b, targetColor.b, 0.08);
 
             const cx = width / 2; const cy = height / 2;
+            
+            // EFECTO VIDRIO: Composite Lighter
             ctx.globalCompositeOperation = 'lighter'; 
             
             particles.forEach((p, i) => {
+                // Rotación
                 const rx = p.x * Math.cos(rotationSpeed) - p.z * Math.sin(rotationSpeed);
                 const rz = p.x * Math.sin(rotationSpeed) + p.z * Math.cos(rotationSpeed);
                 p.x = rx; p.z = rz;
-                const scale = 350 / (350 + p.z);
+
+                // Escala (Zoom de estado)
+                const baseRad = 350 * sphereScale;
+                const scale = baseRad / (baseRad + p.z);
                 const x2d = cx + p.x * scale; const y2d = cy + p.y * scale;
-                const vibeX = (Math.random() - 0.5) * pulseIntensity;
-                const vibeY = (Math.random() - 0.5) * pulseIntensity;
-                const size = (particleSizeBase * scale) + (pulseIntensity * 0.2);
+
+                // Vibración
+                const vibe = (Math.random() - 0.5) * pulseIntensity;
+
+                const size = (2 * scale) + (pulseIntensity * 0.1);
                 
-                ctx.shadowBlur = 15; ctx.shadowColor = `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, 0.8)`;
+                // Brillo del nodo
+                ctx.shadowBlur = 10; 
+                ctx.shadowColor = `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, 0.5)`;
                 ctx.fillStyle = `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${scale})`;
-                ctx.beginPath(); ctx.arc(x2d + vibeX, y2d + vibeY, size, 0, Math.PI * 2); ctx.fill();
+                
+                ctx.beginPath(); ctx.arc(x2d + vibe, y2d + vibe, size, 0, Math.PI * 2); ctx.fill();
+
+                // Conexiones (Solo cercanas)
+                particles.forEach((p2, j) => {
+                    if (i !== j) {
+                        const dist = Math.sqrt((p.x-p2.x)**2 + (p.y-p2.y)**2 + (p.z-p2.z)**2);
+                        if (dist < 40) {
+                            ctx.beginPath();
+                            ctx.strokeStyle = `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${0.1 * scale})`;
+                            ctx.lineWidth = 0.5 * scale;
+                            ctx.moveTo(x2d + vibe, y2d + vibe);
+                            const scale2 = baseRad / (baseRad + p2.z);
+                            ctx.lineTo(cx + p2.x * scale2 + vibe, cy + p2.y * scale2 + vibe);
+                            ctx.stroke();
+                        }
+                    }
+                });
             });
             ctx.globalCompositeOperation = 'source-over';
-            requestAnimationFrame(drawGlassCore);
+            requestAnimationFrame(drawEmeraldCore);
         }
-        drawGlassCore();
+        drawEmeraldCore();
 
-        /* ================= STATE MANAGER ================= */
-        function updateStateVisuals(state, extraMsg = "") {
+        /* ================= CONTROL DE ESTADOS (MEJORADO) ================= */
+        function setVisualState(state) {
             const label = document.getElementById("statusLabel");
             const hud = document.getElementById("hud");
-            hud.className = "hud-overlay"; // Reset
+            
+            // Limpiar clases del HUD
+            hud.className = "hud-overlay";
 
             if (state === 'idle') {
-                targetColor = { r: 60, g: 209, b: 134 }; rotationSpeed = 0.003; pulseIntensity = 0;
-                label.innerText = "SYSTEM ONLINE"; label.style.color = "#3cd186";
-            } else if (state === 'listening') {
-                targetColor = { r: 255, g: 255, b: 255 }; rotationSpeed = 0.001; pulseIntensity = 2;
-                label.innerText = "LISTENING"; label.style.color = "#fff";
-            } else if (state === 'processing') {
-                targetColor = { r: 34, g: 211, b: 238 }; rotationSpeed = 0.08; pulseIntensity = 0;
-                label.innerText = "PROCESSING"; label.style.color = "#22d3ee";
-            } else if (state === 'speaking') {
-                targetColor = { r: 34, g: 211, b: 238 }; rotationSpeed = 0.005; pulseIntensity = 5;
-                label.innerText = "EVYON VOICE"; label.style.color = "#22d3ee";
-                hud.classList.add("speaking");
-            } else if (state === 'error') {
-                targetColor = { r: 239, g: 68, b: 68 }; rotationSpeed = 0; pulseIntensity = 0;
-                label.innerText = extraMsg || "SYSTEM FAILURE"; label.style.color = "#ef4444";
-                hud.classList.add("error-mode");
+                targetColor = COL_EMERALD; 
+                rotationSpeed = 0.002; 
+                pulseIntensity = 0; 
+                sphereScale = 1.0;
+                label.innerText = "SYSTEM ONLINE"; 
+                label.style.color = "#00ff9d";
+            } 
+            else if (state === 'listening') {
+                targetColor = COL_WHITE; // Blanco al escuchar
+                rotationSpeed = 0.001; 
+                pulseIntensity = 1; 
+                sphereScale = 1.2; // SE EXPANDE
+                label.innerText = "LISTENING"; 
+                label.style.color = "#fff";
+                hud.classList.add("hud-listening");
+            } 
+            else if (state === 'processing') {
+                targetColor = COL_CYAN; 
+                rotationSpeed = 0.1; // GIRO MUY RÁPIDO
+                pulseIntensity = 0; 
+                sphereScale = 0.8; // SE CONTRAE
+                label.innerText = "PROCESSING"; 
+                label.style.color = "#00c8ff";
+            } 
+            else if (state === 'speaking') {
+                targetColor = COL_EMERALD; 
+                rotationSpeed = 0.005; 
+                pulseIntensity = 8; // VIBRACIÓN FUERTE
+                sphereScale = 1.1;
+                label.innerText = "EVYON VOICE"; 
+                label.style.color = "#00ff9d";
+                hud.classList.add("hud-speaking");
+            }
+            else if (state === 'error') {
+                targetColor = COL_ERROR;
+                label.innerText = "SYSTEM ERROR";
+                label.style.color = "#ff0055";
+                hud.classList.add("hud-error");
             }
         }
 
-        /* ================= LOGIC & HARD AUDIO FIX ================= */
+        /* ================= SISTEMA (LOGIN & AUDIO) ================= */
         function handleLoginKey(e) {
             if (e.key === "Enter") {
                 const userKey = Object.keys(INSTITUTION_DB).find(key => INSTITUTION_DB[key].pass === e.target.value);
                 if (userKey) {
-                    currentUser = INSTITUTION_DB[userKey];
                     checkApiKey();
-                    document.getElementById("login-screen").style.display = "none";
-                    const ui = document.getElementById("orb-interface");
-                    ui.style.display = "flex";
-                    setTimeout(() => ui.style.opacity = 1, 100);
-                    
-                    // INTENTO 1 DE DESBLOQUEO AL LOGIN
-                    unlockAudioEngine();
+                    document.getElementById("login-screen").style.opacity = 0;
+                    setTimeout(() => {
+                        document.getElementById("login-screen").style.display = "none";
+                        document.getElementById("orb-interface").style.display = "flex";
+                        setTimeout(() => document.getElementById("orb-interface").style.opacity = 1, 100);
+                        unlockAudio(); // Primer desbloqueo
+                    }, 500);
                 }
             }
         }
 
         function checkApiKey() {
             if (!apiKey) {
-                apiKey = prompt("⚠️ API KEY:");
+                apiKey = prompt("🔑 API KEY:");
                 if (apiKey) localStorage.setItem("evyon_api_key", apiKey);
             }
         }
 
-        // --- LA SOLUCIÓN DEFINITIVA: EL ALTAVOZ PERMANENTE ---
+        /* ================= LÓGICA DE VOZ (ROBUSTA) ================= */
         const speaker = document.getElementById("main-speaker");
 
-        function unlockAudioEngine() {
-            // Reproducir silencio para abrir el canal del navegador
+        function unlockAudio() {
             speaker.src = SILENT_MP3;
-            speaker.play().then(() => {
-                console.log("Audio Channel Unlocked");
-            }).catch(e => {
-                console.log("Waiting for user interaction to unlock audio...");
-            });
+            speaker.play().catch(e => console.log("Audio waiting..."));
         }
 
         function initVoice() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) return null;
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'es-MX'; recognition.interimResults = false;
-            recognition.onstart = () => { isListening = true; updateStateVisuals('listening'); };
-            recognition.onend = () => { isListening = false; if (document.getElementById("statusLabel").innerText !== "PROCESSING") updateStateVisuals('idle'); };
-            recognition.onresult = async (e) => { await processAI(e.results[0][0].transcript); };
-            return recognition;
+            const rec = new SpeechRecognition();
+            rec.lang = 'es-MX'; 
+            rec.interimResults = false;
+            
+            rec.onstart = () => { isListening = true; setVisualState('listening'); };
+            
+            // FIX: Si termina de escuchar y no estamos procesando, volver a idle
+            rec.onend = () => { 
+                isListening = false; 
+                if (!isSpeaking && document.getElementById("statusLabel").innerText !== "PROCESSING") {
+                    setVisualState('idle');
+                }
+            };
+            
+            rec.onresult = async (e) => { await processAI(e.results[0][0].transcript); };
+            return rec;
         }
 
         const recognitionEngine = initVoice();
-        
-        function toggleListening() { 
-            // 🚨 INTENTO 2 DE DESBLOQUEO AL CLIC (ESTE ES EL QUE CUENTA)
-            unlockAudioEngine();
+
+        function toggleListening() {
+            unlockAudio(); // Siempre asegurar canal
+            if (isSpeaking) return; // No interrumpir si habla
             
-            if(!apiKey) checkApiKey();
-            if (recognitionEngine) isListening ? recognitionEngine.stop() : recognitionEngine.start(); 
+            if (isListening) recognitionEngine.stop();
+            else recognitionEngine.start();
         }
 
         async function processAI(text) {
-            updateStateVisuals('processing');
+            setVisualState('processing');
+            isSpeaking = true; // Bloqueo lógico
             
-            let sysPrompt = "Eres EVYON. Voz fluida, amigable y servicial. Respuestas breves.";
-            if (text.match(/flojera|cansad|sueño/i)) sysPrompt = "Eres LEÓNIDAS. Motiva con energía.";
+            // CEREBRO: FLUIDO Y AMIGABLE
+            let sysPrompt = "Eres EVYON. Tu voz es fluida, cálida y natural. Respuestas concisas.";
+            if (text.match(/flojera|cansad|sueño/i)) sysPrompt = "Eres LEÓNIDAS. Energía alta y motivadora.";
 
             try {
                 const res = await fetch("https://api.openai.com/v1/chat/completions", {
                     method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
                     body: JSON.stringify({ model: "gpt-4o", messages: [{ role: "system", content: sysPrompt }, ...conversationHistory, { role: "user", content: text }], max_tokens: 150 })
                 });
-                
-                if (res.status === 401) throw new Error("API KEY INVÁLIDA");
-                if (res.status === 429) throw new Error("SIN CRÉDITO");
-                
                 const data = await res.json();
                 if (data.error) throw new Error(data.error.message);
                 
@@ -270,37 +339,37 @@
 
             } catch (err) {
                 console.error(err);
-                updateStateVisuals('error', err.message);
+                setVisualState('error');
+                setTimeout(() => { isSpeaking = false; setVisualState('idle'); }, 2000);
             }
         }
 
         async function playAudio(text) {
-            updateStateVisuals('speaking');
+            setVisualState('speaking'); // Estado Visual Hablando (Vibración Emerald)
+            
             try {
                 const res = await fetch("https://api.openai.com/v1/audio/speech", {
                     method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
                     body: JSON.stringify({ model: "tts-1", voice: "nova", input: text })
                 });
 
-                if (!res.ok) throw new Error("ERROR API AUDIO");
-
                 const blob = await res.blob();
-                const audioUrl = URL.createObjectURL(blob);
+                const url = URL.createObjectURL(blob);
                 
-                // USAR EL SPEAKER DESBLOQUEADO
-                speaker.src = audioUrl;
-                speaker.onended = () => updateStateVisuals('idle');
+                speaker.src = url;
                 
-                try {
-                    await speaker.play();
-                } catch (playErr) {
-                    console.error("Bloqueo persistente:", playErr);
-                    updateStateVisuals('error', "AUDIO BLOQUEADO: TOCA LA PANTALLA");
-                }
+                // FIX CRÍTICO: Asegurar que al terminar vuelva a IDLE
+                speaker.onended = () => {
+                    isSpeaking = false;
+                    setVisualState('idle');
+                };
+                
+                await speaker.play();
 
             } catch (err) {
                 console.error(err);
-                updateStateVisuals('error', err.message);
+                isSpeaking = false;
+                setVisualState('idle'); // Fallback seguro
             }
         }
     </script>
