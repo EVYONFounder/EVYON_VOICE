@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EVYON V7.3 | DIAGNOSTIC</title>
+    <title>EVYON V7.4 | UNLOCKED</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&display=swap');
 
@@ -19,7 +19,6 @@
             color: #fff;
         }
 
-        /* FONDO */
         .bg-vignette {
             position: absolute; width: 100%; height: 100%;
             background: radial-gradient(circle at center, #0f1520 0%, #000 80%);
@@ -50,6 +49,7 @@
             width: 300px; height: 300px; border-radius: 50%;
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             cursor: pointer; z-index: 20;
+            /* -webkit-tap-highlight-color: transparent; */
         }
 
         .status-text {
@@ -86,9 +86,8 @@
     </div>
 
     <div id="login-screen">
-        <h1 style="color:#fff; font-weight:300; letter-spacing:12px; font-size:32px; opacity:0.9;">EVYON <span style="color:#3cd186; font-weight:700;">V7.3</span></h1>
+        <h1 style="color:#fff; font-weight:300; letter-spacing:12px; font-size:32px; opacity:0.9;">EVYON <span style="color:#3cd186; font-weight:700;">V7.4</span></h1>
         <input type="password" id="password" class="login-input" placeholder="CODE" onkeydown="handleLoginKey(event)">
-        <div style="margin-top:20px; color: #666; font-size: 12px;">SYSTEM DIAGNOSTIC READY</div>
     </div>
 
     <div id="orb-interface">
@@ -110,6 +109,9 @@
         let particleSizeBase = 1.5;
         let conversationHistory = [];
 
+        // TRUCO DE AUDIO: Buffer de silencio
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
         /* ================= VISUALS (GLASS CORE) ================= */
         const canvas = document.getElementById('glassCore');
         const ctx = canvas.getContext('2d');
@@ -183,7 +185,7 @@
             }
         }
 
-        /* ================= LOGIC ================= */
+        /* ================= LOGIC & AUDIO UNLOCK ================= */
         function handleLoginKey(e) {
             if (e.key === "Enter") {
                 const userKey = Object.keys(INSTITUTION_DB).find(key => INSTITUTION_DB[key].pass === e.target.value);
@@ -194,15 +196,31 @@
                     const ui = document.getElementById("orb-interface");
                     ui.style.display = "flex";
                     setTimeout(() => ui.style.opacity = 1, 100);
+                    
+                    // Primer intento de desbloqueo al login
+                    unlockAudioEngine();
                 }
             }
         }
 
         function checkApiKey() {
             if (!apiKey) {
-                apiKey = prompt("⚠️ API KEY (sk-...) NECESARIA:");
+                apiKey = prompt("⚠️ API KEY:");
                 if (apiKey) localStorage.setItem("evyon_api_key", apiKey);
             }
+        }
+
+        // --- LA LLAVE MAESTRA DEL AUDIO ---
+        function unlockAudioEngine() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            // Reproducir silencio vacío para "calentar" el canal
+            const buffer = audioCtx.createBuffer(1, 1, 22050);
+            const source = audioCtx.createBufferSource();
+            source.buffer = buffer;
+            source.connect(audioCtx.destination);
+            source.start(0);
         }
 
         function initVoice() {
@@ -217,7 +235,11 @@
         }
 
         const recognitionEngine = initVoice();
+        
         function toggleListening() { 
+            // 🚨 EJECUTAR DESBLOQUEO DE AUDIO INMEDIATO AL CLIC
+            unlockAudioEngine();
+            
             if(!apiKey) checkApiKey();
             if (recognitionEngine) isListening ? recognitionEngine.stop() : recognitionEngine.start(); 
         }
@@ -225,7 +247,6 @@
         async function processAI(text) {
             updateStateVisuals('processing');
             
-            // CEREBRO AMIGABLE
             let sysPrompt = "Eres EVYON. Voz fluida, amigable y servicial. Respuestas breves.";
             if (text.match(/flojera|cansad|sueño/i)) sysPrompt = "Eres LEÓNIDAS. Motiva con energía.";
 
@@ -236,7 +257,7 @@
                 });
                 
                 if (res.status === 401) throw new Error("API KEY INVÁLIDA");
-                if (res.status === 429) throw new Error("SIN CRÉDITO / CUOTA EXCEDIDA");
+                if (res.status === 429) throw new Error("SIN CRÉDITO");
                 
                 const data = await res.json();
                 if (data.error) throw new Error(data.error.message);
@@ -248,7 +269,7 @@
 
             } catch (err) {
                 console.error(err);
-                updateStateVisuals('error', err.message); // MOSTRAR ERROR EN PANTALLA
+                updateStateVisuals('error', err.message);
             }
         }
 
@@ -260,27 +281,19 @@
                     body: JSON.stringify({ model: "tts-1", voice: "nova", input: text })
                 });
 
-                if (!res.ok) {
-                    if (res.status === 401) throw new Error("API KEY AUDIO INVÁLIDA");
-                    throw new Error("ERROR DE AUDIO API");
-                }
+                if (!res.ok) throw new Error("ERROR API AUDIO");
 
                 const blob = await res.blob();
                 const audio = new Audio(URL.createObjectURL(blob));
                 
                 audio.onended = () => updateStateVisuals('idle');
-                audio.onerror = (e) => { 
-                    console.error("Audio Error:", e);
-                    updateStateVisuals('error', "FALLO REPRODUCCIÓN");
-                };
-
-                // INTENTO DE REPRODUCCIÓN ROBUSTO
-                const playPromise = audio.play();
-                if (playPromise !== undefined) {
-                    playPromise.catch(error => {
-                        console.error("Autoplay prevent:", error);
-                        updateStateVisuals('error', "NAVEGADOR BLOQUEÓ AUDIO (TOCA DE NUEVO)");
-                    });
+                
+                // Intento robusto de reproducción
+                try {
+                    await audio.play();
+                } catch (playErr) {
+                    console.error("Bloqueo persistente:", playErr);
+                    updateStateVisuals('error', "AUDIO BLOQUEADO POR NAVEGADOR");
                 }
 
             } catch (err) {
