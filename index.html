@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EVYON V8.5 | PLATINUM</title>
+    <title>EVYON V9 | DIAMOND</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap');
 
@@ -19,28 +19,28 @@
             color: #fff;
         }
 
-        /* FONDO MÁS LIMPIO (Deep Space Grey) */
+        /* FONDO: NEGRO PROFUNDO (Cero verde en el fondo) */
         .bg-vignette {
             position: absolute; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, #111 0%, #000 90%);
+            background: radial-gradient(circle at center, #111 0%, #000 85%);
             z-index: -5;
         }
         
-        canvas { position: absolute; top: 0; left: 0; z-index: 1; filter: contrast(1.3) brightness(1.1); }
+        /* CANVAS: Mayor contraste para resaltar el blanco */
+        canvas { position: absolute; top: 0; left: 0; z-index: 1; filter: contrast(1.1); }
 
-        /* HUD ELEGANTE (Líneas finas) */
-        .hud-overlay { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 5; padding: 25px; }
-        .corner { position: absolute; width: 30px; height: 30px; border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.5s ease; }
+        /* HUD: Muy sutil, casi invisible */
+        .hud-overlay { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 5; padding: 30px; }
+        .corner { position: absolute; width: 20px; height: 20px; border: 1px solid rgba(255, 255, 255, 0.15); transition: all 0.5s ease; }
         
-        /* ESTADOS HUD */
-        .hud-listening .corner { border-color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.3); }
-        .hud-speaking .corner { border-color: #00ff9d; box-shadow: 0 0 15px rgba(0, 255, 157, 0.4); }
+        /* UI STATES HUD */
+        .hud-speaking .corner { border-color: #00ff9d; box-shadow: 0 0 10px rgba(0, 255, 157, 0.3); }
         .hud-error .corner { border-color: #ff3333; }
         
-        .tl { top: 25px; left: 25px; border-right: none; border-bottom: none; }
-        .tr { top: 25px; right: 25px; border-left: none; border-bottom: none; }
-        .bl { bottom: 25px; left: 25px; border-right: none; border-top: none; }
-        .br { bottom: 25px; right: 25px; border-left: none; border-top: none; }
+        .tl { top: 30px; left: 30px; border-right: none; border-bottom: none; }
+        .tr { top: 30px; right: 30px; border-left: none; border-bottom: none; }
+        .bl { bottom: 30px; left: 30px; border-right: none; border-top: none; }
+        .br { bottom: 30px; right: 30px; border-left: none; border-top: none; }
 
         /* UI */
         #orb-interface {
@@ -55,27 +55,27 @@
         }
 
         .status-text {
-            position: absolute; bottom: 15%;
-            font-size: 16px; letter-spacing: 8px; font-weight: 600;
-            color: rgba(255, 255, 255, 0.5); /* Blanco sutil */
+            position: absolute; bottom: 12%;
+            font-size: 14px; letter-spacing: 6px; font-weight: 500;
+            color: rgba(255, 255, 255, 0.3); /* Gris muy tenue */
             text-transform: uppercase; pointer-events: none; transition: color 0.5s;
             text-align: center; width: 100%;
         }
 
-        /* LOGIN */
+        /* LOGIN: Minimalista Puro */
         #login-screen {
             position: absolute; z-index: 20; text-align: center;
             background: #000; width: 100%; height: 100%;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
         .login-input {
-            background: transparent; border: 1px solid rgba(255,255,255,0.3); 
-            padding: 15px; color: #fff; font-family: 'Rajdhani', sans-serif; font-size: 20px;
-            text-align: center; letter-spacing: 6px; width: 250px; outline: none;
-            text-transform: uppercase; margin-top: 30px; border-radius: 4px;
-            transition: border-color 0.3s;
+            background: transparent; border: 1px solid rgba(255,255,255,0.2); 
+            padding: 12px; color: #fff; font-family: 'Rajdhani', sans-serif; font-size: 18px;
+            text-align: center; letter-spacing: 5px; width: 220px; outline: none;
+            text-transform: uppercase; margin-top: 25px; border-radius: 2px;
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
-        .login-input:focus { border-color: #00ff9d; }
+        .login-input:focus { border-color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.1); }
 
     </style>
 </head>
@@ -90,13 +90,13 @@
     </div>
 
     <div id="login-screen">
-        <h1 style="color:#fff; font-weight:300; letter-spacing:12px; font-size:28px;">EVYON <span style="color:#00ff9d; font-weight:600;">PLATINUM</span></h1>
-        <input type="password" id="password" class="login-input" placeholder="CODE" onkeydown="handleLoginKey(event)">
+        <h1 style="color:#fff; font-weight:300; letter-spacing:8px; font-size:24px;">EVYON <span style="color:#fff; font-weight:600; opacity:0.8;">OS</span></h1>
+        <input type="password" id="password" class="login-input" placeholder="ACCESS" onkeydown="handleLoginKey(event)">
     </div>
 
     <div id="orb-interface">
         <div class="interaction-zone" onclick="toggleListening()"></div>
-        <div class="status-text" id="statusLabel">SYSTEM READY</div>
+        <div class="status-text" id="statusLabel">READY</div>
     </div>
 
     <script>
@@ -106,17 +106,22 @@
         let isListening = false;
         let isSpeaking = false;
         
-        // COLORES: La mezcla "Platinum Emerald"
-        const COL_EMERALD_GLOW = { r: 0, g: 255, b: 157 };   // El brillo (Verde EVYON)
-        const COL_PLATINUM = { r: 220, g: 230, b: 240 };     // La materia (Blanco Vidrio)
-        const COL_CYAN_GLOW = { r: 0, g: 200, b: 255 };      // Brillo al pensar
+        // COLORES: PALETA DIAMOND GLASS
+        // El truco: Base blanca, Glow muy tenue
+        const COL_EMERALD_HINT = { r: 0, g: 255, b: 157, a: 0.3 }; // Esmeralda al 30% de intensidad
+        const COL_SILVER = { r: 240, g: 245, b: 255 };             // Plata puro
+        const COL_CYAN_HINT = { r: 100, g: 220, b: 255, a: 0.4 };  // Cyan sutil
         
-        let targetGlow = COL_EMERALD_GLOW; 
-        let currentGlow = { ...COL_EMERALD_GLOW }; 
+        // Estado actual del GLOW (Sombra)
+        let targetGlowColor = { r: 0, g: 255, b: 157 };
+        let targetGlowAlpha = 0.2; // Idle: Apenas visible
         
-        // FÍSICA SUAVE (Inercia)
-        let targetSpeed = 0.002;
-        let currentSpeed = 0.002;
+        let currentGlowColor = { r: 0, g: 255, b: 157 };
+        let currentGlowAlpha = 0.2;
+
+        // FÍSICA
+        let targetSpeed = 0.0015; // Rotación lenta y elegante
+        let currentSpeed = 0.0015;
         
         let targetScale = 1.0;
         let currentScale = 1.0;
@@ -127,12 +132,12 @@
         let conversationHistory = [];
         const SILENT_MP3 = "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMD//////////////////////////////////wAAADFMYXZjNTguMTM0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASAAVrGHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//OECQAAAAAgAAAAAAALAAAAAAABAAABAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//OECQAAAAAAAAAAAAAAAAAAAAABAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//OECQAAAAAAAAAAAAAAAAAAAAABAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 
-        /* ================= MOTOR 3D "PLATINUM CORE" ================= */
+        /* ================= MOTOR 3D "DIAMOND CORE" ================= */
         const canvas = document.getElementById('glassCore');
         const ctx = canvas.getContext('2d');
         let width, height;
         let particles = [];
-        const numParticles = 400; // Alta densidad para look "sólido"
+        const numParticles = 450; // Más partículas, más pequeñas
 
         function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
         window.addEventListener('resize', resize);
@@ -145,69 +150,65 @@
                 x: 180 * Math.sin(theta) * Math.cos(phi), 
                 y: 180 * Math.sin(theta) * Math.sin(phi), 
                 z: 180 * Math.cos(theta),
-                phase: Math.random() * Math.PI * 2 // Para respiración individual
+                phase: Math.random() * Math.PI * 2
             });
         }
 
-        // Interpolación Lineal (Suavizado)
         function lerp(start, end, t) { return start * (1 - t) + end * t; }
 
-        function drawPlatinumCore() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'; // Barrido limpio
-            ctx.fillRect(0, 0, width, height);
+        function drawDiamondCore() {
+            ctx.clearRect(0, 0, width, height); // Limpieza total para transparencia
             
-            // 1. CÁLCULO DE FÍSICA (SUAVIZADO)
-            currentSpeed = lerp(currentSpeed, targetSpeed, 0.05); // 5% de acercamiento por frame
+            // Suavizado de variables físicas
+            currentSpeed = lerp(currentSpeed, targetSpeed, 0.05);
             currentScale = lerp(currentScale, targetScale, 0.05);
             currentPulse = lerp(currentPulse, targetPulse, 0.1);
             
-            // 2. CÁLCULO DE COLOR (SUAVIZADO)
-            currentGlow.r = lerp(currentGlow.r, targetGlow.r, 0.05);
-            currentGlow.g = lerp(currentGlow.g, targetGlow.g, 0.05);
-            currentGlow.b = lerp(currentGlow.b, targetGlow.b, 0.05);
+            // Suavizado de color
+            currentGlowColor.r = lerp(currentGlowColor.r, targetGlowColor.r, 0.05);
+            currentGlowColor.g = lerp(currentGlowColor.g, targetGlowColor.g, 0.05);
+            currentGlowColor.b = lerp(currentGlowColor.b, targetGlowColor.b, 0.05);
+            currentGlowAlpha = lerp(currentGlowAlpha, targetGlowAlpha, 0.05);
 
             const cx = width / 2; const cy = height / 2;
-            ctx.globalCompositeOperation = 'lighter'; 
+            ctx.globalCompositeOperation = 'lighter'; // Efecto luz superpuesta
             
             particles.forEach((p, i) => {
-                // Rotación usando la velocidad suavizada
+                // Rotación
                 const rx = p.x * Math.cos(currentSpeed) - p.z * Math.sin(currentSpeed);
                 const rz = p.x * Math.sin(currentSpeed) + p.z * Math.cos(currentSpeed);
                 p.x = rx; p.z = rz;
 
-                // Escala General
                 const baseRad = 350 * currentScale;
                 const scale = baseRad / (baseRad + p.z);
                 const x2d = cx + p.x * scale; const y2d = cy + p.y * scale;
 
-                // Efecto "Respiración" individual (micro-movimiento)
-                const breathe = Math.sin(Date.now() * 0.002 + p.phase) * 2;
-                
-                // Vibración por voz
+                // Respiración muy sutil
+                const breathe = Math.sin(Date.now() * 0.0015 + p.phase) * 1.5;
                 const vibe = (Math.random() - 0.5) * currentPulse;
 
-                const size = (1.8 * scale) + (currentPulse * 0.05);
+                // TAMAÑO: Más pequeños para efecto "polvo"
+                const size = (1.2 * scale) + (currentPulse * 0.05);
                 
-                // --- LA ESTÉTICA PLATINUM ---
-                // Sombra (Glow): Es el color Esmeralda/Cyan
-                ctx.shadowBlur = 15; 
-                ctx.shadowColor = `rgba(${currentGlow.r}, ${currentGlow.g}, ${currentGlow.b}, 0.6)`;
+                // COLOR Y GLOW
+                // El Glow es el que lleva el color (Verde/Cyan) pero muy transparente
+                ctx.shadowBlur = 8 * scale; 
+                ctx.shadowColor = `rgba(${currentGlowColor.r}, ${currentGlowColor.g}, ${currentGlowColor.b}, ${currentGlowAlpha})`;
                 
-                // Relleno (Matter): Es Blanco/Plata (Casi blanco puro)
-                // Usamos alpha bajo para que parezca vidrio
-                ctx.fillStyle = `rgba(240, 255, 250, ${scale * 0.8})`; 
+                // El Cuerpo es BLANCO VIDRIO (Casi transparente)
+                // Usamos alpha muy bajo (0.4) para que se vea a través
+                ctx.fillStyle = `rgba(${COL_SILVER.r}, ${COL_SILVER.g}, ${COL_SILVER.b}, ${scale * 0.4})`; 
                 
                 ctx.beginPath(); 
                 ctx.arc(x2d + vibe, y2d + vibe, size, 0, Math.PI * 2); 
                 ctx.fill();
             });
             
-            ctx.globalCompositeOperation = 'source-over';
-            requestAnimationFrame(drawPlatinumCore);
+            requestAnimationFrame(drawDiamondCore);
         }
-        drawPlatinumCore();
+        drawDiamondCore();
 
-        /* ================= CONTROL DE ESTADOS (SUAVE) ================= */
+        /* ================= CONTROL DE ESTADOS (FINO) ================= */
         function setVisualState(state) {
             const label = document.getElementById("statusLabel");
             const hud = document.getElementById("hud");
@@ -215,46 +216,49 @@
             hud.className = "hud-overlay";
 
             if (state === 'idle') {
-                // IDLE: Verde Esmeralda suave, lento
-                targetGlow = COL_EMERALD_GLOW; 
-                targetSpeed = 0.002; 
+                // IDLE: Plata con un "toque" de esmeralda (Alpha 0.25)
+                targetGlowColor = { r: 0, g: 255, b: 157 };
+                targetGlowAlpha = 0.25; 
+                targetSpeed = 0.0015; 
                 targetPulse = 0; 
                 targetScale = 1.0;
                 label.innerText = "ONLINE"; 
-                label.style.color = "rgba(255,255,255,0.5)";
+                label.style.color = "rgba(255,255,255,0.3)";
             } 
             else if (state === 'listening') {
-                // LISTENING: Blanco total, se expande suave
-                targetGlow = COL_PLATINUM; 
-                targetSpeed = 0.001; // Casi quieto
-                targetPulse = 2; 
-                targetScale = 1.3; // Expansión notable
+                // LISTENING: Blanco puro (Alpha 0.6)
+                targetGlowColor = { r: 255, g: 255, b: 255 };
+                targetGlowAlpha = 0.6;
+                targetSpeed = 0.0005; // Congelado
+                targetPulse = 1; 
+                targetScale = 1.25; 
                 label.innerText = "LISTENING"; 
                 label.style.color = "#fff";
-                hud.classList.add("hud-listening");
             } 
             else if (state === 'processing') {
-                // PROCESSING: Cyan, acelera
-                targetGlow = COL_CYAN_GLOW; 
-                targetSpeed = 0.08; // Giro rápido
+                // PROCESSING: Cyan Sutil (Alpha 0.4)
+                targetGlowColor = { r: 0, g: 220, b: 255 };
+                targetGlowAlpha = 0.4;
+                targetSpeed = 0.08; 
                 targetPulse = 0; 
-                targetScale = 0.9; // Contracción (pensando)
-                label.innerText = "THINKING"; 
-                label.style.color = "#00c8ff";
+                targetScale = 0.9; 
+                label.innerText = "PROCESSING"; 
+                label.style.color = "rgba(0, 220, 255, 0.7)";
             } 
             else if (state === 'speaking') {
-                // SPEAKING: Esmeralda Activo, pulso fuerte
-                targetGlow = COL_EMERALD_GLOW; 
-                targetSpeed = 0.005; 
-                targetPulse = 10; // Vibración fuerte
+                // SPEAKING: Esmeralda Activo (Alpha 0.5 - No saturado)
+                targetGlowColor = { r: 0, g: 255, b: 157 };
+                targetGlowAlpha = 0.5;
+                targetSpeed = 0.004; 
+                targetPulse = 8; 
                 targetScale = 1.1; 
                 label.innerText = "EVYON VOICE"; 
                 label.style.color = "#00ff9d";
                 hud.classList.add("hud-speaking");
             }
             else if (state === 'error') {
-                targetGlow = { r: 255, g: 50, b: 50 };
-                targetSpeed = 0;
+                targetGlowColor = { r: 255, g: 50, b: 50 };
+                targetGlowAlpha = 0.8;
                 label.innerText = "OFFLINE";
                 label.style.color = "#ff3333";
                 hud.classList.add("hud-error");
@@ -267,14 +271,14 @@
                 const userKey = Object.keys(INSTITUTION_DB).find(key => INSTITUTION_DB[key].pass === e.target.value);
                 if (userKey) {
                     checkApiKey();
-                    document.getElementById("login-screen").style.transition = "opacity 1s";
+                    document.getElementById("login-screen").style.transition = "opacity 0.8s";
                     document.getElementById("login-screen").style.opacity = 0;
                     setTimeout(() => {
                         document.getElementById("login-screen").style.display = "none";
                         document.getElementById("orb-interface").style.display = "flex";
                         setTimeout(() => document.getElementById("orb-interface").style.opacity = 1, 500);
                         unlockAudio(); 
-                    }, 1000);
+                    }, 800);
                 }
             }
         }
@@ -304,7 +308,7 @@
             
             rec.onend = () => { 
                 isListening = false; 
-                if (!isSpeaking && document.getElementById("statusLabel").innerText !== "THINKING") {
+                if (!isSpeaking && document.getElementById("statusLabel").innerText !== "PROCESSING") {
                     setVisualState('idle');
                 }
             };
@@ -364,7 +368,7 @@
                 speaker.src = url;
                 speaker.onended = () => {
                     isSpeaking = false;
-                    setVisualState('idle'); // Regreso suave al reposo
+                    setVisualState('idle'); 
                 };
                 
                 await speaker.play();
