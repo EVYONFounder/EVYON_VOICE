@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>EVYON OS | MOBILE</title>
+    <title>EVYON OS | STABLE</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap');
 
@@ -12,43 +12,43 @@
         body {
             margin: 0; padding: 0;
             background-color: #000;
-            /* Usa dvh (Dynamic Viewport Height) para evitar problemas con la barra de Safari/Chrome móvil */
-            height: 100dvh; width: 100vw;
+            height: 100dvh; width: 100vw; /* dvh para móviles */
             display: flex; justify-content: center; align-items: center;
             font-family: 'Rajdhani', sans-serif;
             overflow: hidden;
             color: #fff;
-            position: fixed; /* Evita rebote en iOS */
+            position: fixed; top: 0; left: 0;
         }
 
+        /* FONDO LIMPIO */
         .bg-vignette {
             position: absolute; width: 100%; height: 100%;
             background: radial-gradient(circle at center, #111 0%, #000 90%);
             z-index: -5;
         }
         
-        canvas { position: absolute; top: 0; left: 0; z-index: 1; filter: contrast(1.1); }
+        /* CANVAS */
+        canvas { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1; 
+            filter: contrast(1.2); 
+        }
 
-        /* HUD RESPONSIVO (Se adapta a zonas seguras del iPhone/Android) */
+        /* HUD */
         .hud-overlay { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             pointer-events: none; z-index: 5; 
             padding: max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
         }
         
-        /* Esquinas más pequeñas en móvil */
-        .corner { position: absolute; width: 20px; height: 20px; border: 1px solid rgba(255, 255, 255, 0.15); transition: all 0.5s ease; }
-        
+        .corner { position: absolute; width: 25px; height: 25px; border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.5s ease; }
         .hud-speaking .corner { border-color: #00ff9d; box-shadow: 0 0 10px rgba(0, 255, 157, 0.3); }
         .hud-error .corner { border-color: #ff3333; }
         
-        .tl { top: var(--pad); left: var(--pad); border-right: none; border-bottom: none; }
-        .tr { top: var(--pad); right: var(--pad); border-left: none; border-bottom: none; }
-        .bl { bottom: var(--pad); left: var(--pad); border-right: none; border-top: none; }
-        .br { bottom: var(--pad); right: var(--pad); border-left: none; border-top: none; }
-
-        /* VARIABLES CSS PARA PADDING */
-        .hud-overlay { --pad: 25px; }
+        .tl { top: 25px; left: 25px; border-right: none; border-bottom: none; }
+        .tr { top: 25px; right: 25px; border-left: none; border-bottom: none; }
+        .bl { bottom: 25px; left: 25px; border-right: none; border-top: none; }
+        .br { bottom: 25px; right: 25px; border-left: none; border-top: none; }
 
         /* UI */
         #orb-interface {
@@ -70,19 +70,18 @@
             text-align: center; width: 100%;
         }
 
-        /* LOGIN ADJUSTADO A MÓVIL */
+        /* LOGIN */
         #login-screen {
             position: absolute; z-index: 20; text-align: center;
             background: #000; width: 100%; height: 100%;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            padding-bottom: 10%; /* Sube un poco visualmente */
+            padding-bottom: 50px;
         }
         .login-input {
             background: transparent; border: 1px solid rgba(255,255,255,0.2); 
             padding: 12px; color: #fff; font-family: 'Rajdhani', sans-serif; font-size: 18px;
-            text-align: center; letter-spacing: 5px; width: 70%; max-width: 250px; outline: none;
+            text-align: center; letter-spacing: 5px; width: 240px; outline: none;
             text-transform: uppercase; margin-top: 25px; border-radius: 4px;
-            transition: border-color 0.3s, box-shadow 0.3s;
         }
         .login-input:focus { border-color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.1); }
 
@@ -99,7 +98,7 @@
     </div>
 
     <div id="login-screen">
-        <h1 style="color:#fff; font-weight:300; letter-spacing:8px; font-size:24px; margin-bottom: 10px;">EVYON <span style="color:#fff; font-weight:600; opacity:0.8;">OS</span></h1>
+        <h1 style="color:#fff; font-weight:300; letter-spacing:8px; font-size:26px;">EVYON <span style="color:#fff; font-weight:600; opacity:0.8;">OS</span></h1>
         <input type="password" id="password" class="login-input" placeholder="ACCESS" onkeydown="handleLoginKey(event)">
     </div>
 
@@ -115,7 +114,7 @@
         let isListening = false;
         let isSpeaking = false;
         
-        // COLORES DIAMOND GLASS
+        // COLORES DIAMOND
         const COL_EMERALD_HINT = { r: 0, g: 255, b: 157 };
         const COL_SILVER = { r: 240, g: 245, b: 255 }; 
         const COL_CYAN_HINT = { r: 0, g: 220, b: 255 };
@@ -125,7 +124,6 @@
         let currentGlowColor = { ...COL_EMERALD_HINT };
         let currentGlowAlpha = 0.25;
 
-        // FÍSICA RESPONSIVA
         let targetSpeed = 0.0015;
         let currentSpeed = 0.0015;
         let targetScale = 1.0;
@@ -133,44 +131,41 @@
         let targetPulse = 0;
         let currentPulse = 0;
         
-        // VARIABLE MAESTRA DE TAMAÑO
-        let baseRadius = 150; 
-
         let conversationHistory = [];
         const SILENT_MP3 = "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMD//////////////////////////////////wAAADFMYXZjNTguMTM0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASAAVrGHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//OECQAAAAAgAAAAAAALAAAAAAABAAABAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//OECQAAAAAAAAAAAAAAAAAAAAABAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//OECQAAAAAAAAAAAAAAAAAAAAABAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 
-        /* ================= MOTOR 3D RESPONSIVO ================= */
+        /* ================= MOTOR 3D CORREGIDO (FIX DOBLE ZOOM) ================= */
         const canvas = document.getElementById('glassCore');
         const ctx = canvas.getContext('2d');
-        let width, height;
+        let width, height, dpr;
         let particles = [];
-        const numParticles = 400; 
+        const numParticles = 380; 
 
-        // AJUSTE DE TAMAÑO INTELIGENTE
+        // 1. AJUSTE DE RESOLUCIÓN REAL
         function resize() {
+            dpr = window.devicePixelRatio || 1;
+            // Usamos el tamaño lógico de la ventana
             width = window.innerWidth;
             height = window.innerHeight;
             
-            // Soporte Retina (Alta Densidad)
-            const dpr = window.devicePixelRatio || 1;
+            // Escalamos el canvas físicamente, pero NO el contexto con ctx.scale()
+            // Esto evita el conflicto de coordenadas. Haremos las matemáticas con pixeles reales.
             canvas.width = width * dpr;
             canvas.height = height * dpr;
-            ctx.scale(dpr, dpr);
-
-            // CÁLCULO DE RADIO DINÁMICO
-            // La esfera ocupará el 40% del ancho del celular (o alto, lo que sea menor)
-            // Esto asegura que NUNCA se salga de la pantalla
-            const minDim = Math.min(width, height);
-            baseRadius = minDim * 0.40; 
+            
+            // Forzamos el tamaño CSS para que ocupe la pantalla
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
         }
         window.addEventListener('resize', resize);
         resize();
 
+        // 2. GENERACIÓN DE PARTÍCULAS
         for(let i=0; i<numParticles; i++) {
             const theta = Math.acos(-1 + (2 * i) / numParticles);
             const phi = Math.sqrt(numParticles * Math.PI) * theta;
             particles.push({ 
-                x: Math.sin(theta) * Math.cos(phi), // Normalizado (unitario)
+                x: Math.sin(theta) * Math.cos(phi), 
                 y: Math.sin(theta) * Math.sin(phi), 
                 z: Math.cos(theta),
                 phase: Math.random() * Math.PI * 2
@@ -179,59 +174,67 @@
 
         function lerp(start, end, t) { return start * (1 - t) + end * t; }
 
-        function drawMobileCore() {
-            ctx.clearRect(0, 0, width, height);
+        function drawFixedCore() {
+            // Limpiar usando dimensiones reales
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             
+            // Físicas
             currentSpeed = lerp(currentSpeed, targetSpeed, 0.05);
             currentScale = lerp(currentScale, targetScale, 0.05);
             currentPulse = lerp(currentPulse, targetPulse, 0.1);
             
+            // Color
             currentGlowColor.r = lerp(currentGlowColor.r, targetGlowColor.r, 0.05);
             currentGlowColor.g = lerp(currentGlowColor.g, targetGlowColor.g, 0.05);
             currentGlowColor.b = lerp(currentGlowColor.b, targetGlowColor.b, 0.05);
             currentGlowAlpha = lerp(currentGlowAlpha, targetGlowAlpha, 0.05);
 
-            const cx = width / 2; const cy = height / 2;
+            // 3. CÁLCULO DE CENTRO Y RADIO SEGURO
+            const realWidth = canvas.width;
+            const realHeight = canvas.height;
+            const cx = realWidth / 2;
+            const cy = realHeight / 2;
+            
+            // EL FIX: El radio es relativo al lado MÁS PEQUEÑO de la pantalla física
+            // 35% del ancho/alto mínimo. Nunca se saldrá.
+            const minDim = Math.min(realWidth, realHeight);
+            const baseRadius = minDim * 0.35 * currentScale; 
+
             ctx.globalCompositeOperation = 'lighter'; 
             
-            // EL RADIO ACTUAL (Responsive * Escala de Animación)
-            const currentRadius = baseRadius * currentScale;
-
             particles.forEach((p, i) => {
                 // Rotación
-                let x = p.x; let z = p.z;
-                const rx = x * Math.cos(currentSpeed) - z * Math.sin(currentSpeed);
-                const rz = x * Math.sin(currentSpeed) + z * Math.cos(currentSpeed);
+                const rx = p.x * Math.cos(currentSpeed) - p.z * Math.sin(currentSpeed);
+                const rz = p.x * Math.sin(currentSpeed) + p.z * Math.cos(currentSpeed);
                 p.x = rx; p.z = rz;
 
-                // Proyección 3D
-                // Usamos el Radio Dinámico aquí
-                const zScale = (currentRadius + 200) / ((currentRadius + 200) + (p.z * currentRadius)); 
+                // 4. PROYECCIÓN CORREGIDA (Sin Clipping)
+                // "Alejamos" la cámara virtualmente (+2.5) para que nada golpee la pantalla
+                const fov = 2.5; 
+                const zScale = fov / (fov + p.z); 
                 
-                const x2d = cx + (p.x * currentRadius) * zScale; 
-                const y2d = cy + (p.y * currentRadius) * zScale;
+                const x2d = cx + (p.x * baseRadius * zScale); 
+                const y2d = cy + (p.y * baseRadius * zScale);
 
-                // Respiración
-                const breathe = Math.sin(Date.now() * 0.0015 + p.phase) * 1.5;
-                const vibe = (Math.random() - 0.5) * currentPulse;
-
-                // Tamaño de puntos relativo al radio (para que no sean gigantes en móvil)
-                const dotBaseSize = currentRadius * 0.008; // 0.8% del radio
-                const size = Math.max(0.5, (dotBaseSize * zScale) + (currentPulse * 0.05));
+                // Efectos
+                const vibe = (Math.random() - 0.5) * currentPulse * dpr; // Ajustado a retina
                 
-                // Color
-                ctx.shadowBlur = 8 * zScale; 
+                // Tamaño seguro: Máximo 3px base * dpr
+                const dotSize = Math.max(0.5, (1.5 * zScale * dpr) + (currentPulse * 0.1));
+                
+                // Dibujado
+                ctx.shadowBlur = 10 * dpr; 
                 ctx.shadowColor = `rgba(${currentGlowColor.r}, ${currentGlowColor.g}, ${currentGlowColor.b}, ${currentGlowAlpha})`;
-                ctx.fillStyle = `rgba(${COL_SILVER.r}, ${COL_SILVER.g}, ${COL_SILVER.b}, ${zScale * 0.5})`; 
+                ctx.fillStyle = `rgba(${COL_SILVER.r}, ${COL_SILVER.g}, ${COL_SILVER.b}, ${zScale * 0.4})`; 
                 
                 ctx.beginPath(); 
-                ctx.arc(x2d + vibe, y2d + vibe, size, 0, Math.PI * 2); 
+                ctx.arc(x2d + vibe, y2d + vibe, dotSize, 0, Math.PI * 2); 
                 ctx.fill();
             });
             
-            requestAnimationFrame(drawMobileCore);
+            requestAnimationFrame(drawFixedCore);
         }
-        drawMobileCore();
+        drawFixedCore();
 
         /* ================= ESTADOS ================= */
         function setVisualState(state) {
@@ -247,7 +250,7 @@
             } 
             else if (state === 'listening') {
                 targetGlowColor = COL_SILVER; targetGlowAlpha = 0.6;
-                targetSpeed = 0.0005; targetPulse = 1; targetScale = 1.15; // Menos expansión en móvil
+                targetSpeed = 0.0005; targetPulse = 1; targetScale = 1.15; 
                 label.innerText = "LISTENING"; label.style.color = "#fff";
                 hud.classList.add("hud-listening");
             } 
@@ -275,9 +278,7 @@
                 const userKey = Object.keys(INSTITUTION_DB).find(key => INSTITUTION_DB[key].pass === e.target.value);
                 if (userKey) {
                     checkApiKey();
-                    // Ocultar teclado en móvil
-                    document.getElementById("password").blur();
-                    
+                    document.getElementById("password").blur(); // Cierra teclado
                     document.getElementById("login-screen").style.transition = "opacity 0.8s";
                     document.getElementById("login-screen").style.opacity = 0;
                     setTimeout(() => {
@@ -297,7 +298,7 @@
             }
         }
 
-        /* ================= VOZ & AUDIO ================= */
+        /* ================= AUDIO & VOZ ================= */
         const speaker = document.getElementById("main-speaker");
 
         function unlockAudio() {
@@ -362,24 +363,15 @@
 
         async function playAudio(text) {
             setVisualState('speaking'); 
-            
             try {
                 const res = await fetch("https://api.openai.com/v1/audio/speech", {
                     method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
                     body: JSON.stringify({ model: "tts-1", voice: "nova", input: text })
                 });
-
                 const blob = await res.blob();
-                const url = URL.createObjectURL(blob);
-                
-                speaker.src = url;
-                speaker.onended = () => {
-                    isSpeaking = false;
-                    setVisualState('idle'); 
-                };
-                
+                speaker.src = URL.createObjectURL(blob);
+                speaker.onended = () => { isSpeaking = false; setVisualState('idle'); };
                 await speaker.play();
-
             } catch (err) {
                 console.error(err);
                 isSpeaking = false;
