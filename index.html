@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EVYON V8 | EMERALD</title>
+    <title>EVYON V8.5 | PLATINUM</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap');
 
@@ -19,28 +19,28 @@
             color: #fff;
         }
 
-        /* FONDO MEJORADO */
+        /* FONDO MÁS LIMPIO (Deep Space Grey) */
         .bg-vignette {
             position: absolute; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, #051014 0%, #000 90%); /* Fondo verdoso muy oscuro */
+            background: radial-gradient(circle at center, #111 0%, #000 90%);
             z-index: -5;
         }
         
-        canvas { position: absolute; top: 0; left: 0; z-index: 1; filter: contrast(1.5) brightness(1.2); }
+        canvas { position: absolute; top: 0; left: 0; z-index: 1; filter: contrast(1.3) brightness(1.1); }
 
-        /* HUD */
-        .hud-overlay { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 5; padding: 20px; }
-        .corner { position: absolute; width: 50px; height: 50px; border: 2px solid rgba(0, 255, 157, 0.2); transition: all 0.3s ease; }
+        /* HUD ELEGANTE (Líneas finas) */
+        .hud-overlay { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 5; padding: 25px; }
+        .corner { position: absolute; width: 30px; height: 30px; border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.5s ease; }
         
-        /* ESTADOS VISUALES DEL HUD */
-        .hud-listening .corner { border-color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.5); }
-        .hud-speaking .corner { border-color: #00ff9d; box-shadow: 0 0 20px rgba(0, 255, 157, 0.6); }
-        .hud-error .corner { border-color: #ff0055; }
+        /* ESTADOS HUD */
+        .hud-listening .corner { border-color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.3); }
+        .hud-speaking .corner { border-color: #00ff9d; box-shadow: 0 0 15px rgba(0, 255, 157, 0.4); }
+        .hud-error .corner { border-color: #ff3333; }
         
-        .tl { top: 20px; left: 20px; border-right: none; border-bottom: none; }
-        .tr { top: 20px; right: 20px; border-left: none; border-bottom: none; }
-        .bl { bottom: 20px; left: 20px; border-right: none; border-top: none; }
-        .br { bottom: 20px; right: 20px; border-left: none; border-top: none; }
+        .tl { top: 25px; left: 25px; border-right: none; border-bottom: none; }
+        .tr { top: 25px; right: 25px; border-left: none; border-bottom: none; }
+        .bl { bottom: 25px; left: 25px; border-right: none; border-top: none; }
+        .br { bottom: 25px; right: 25px; border-left: none; border-top: none; }
 
         /* UI */
         #orb-interface {
@@ -56,32 +56,32 @@
 
         .status-text {
             position: absolute; bottom: 15%;
-            font-size: 20px; letter-spacing: 6px; font-weight: 700;
-            color: #00ff9d; text-shadow: 0 0 15px rgba(0, 255, 157, 0.6);
-            text-transform: uppercase; pointer-events: none; transition: color 0.3s;
+            font-size: 16px; letter-spacing: 8px; font-weight: 600;
+            color: rgba(255, 255, 255, 0.5); /* Blanco sutil */
+            text-transform: uppercase; pointer-events: none; transition: color 0.5s;
             text-align: center; width: 100%;
         }
 
         /* LOGIN */
         #login-screen {
             position: absolute; z-index: 20; text-align: center;
-            background: rgba(0,0,0,0.95); width: 100%; height: 100%;
+            background: #000; width: 100%; height: 100%;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
         .login-input {
-            background: transparent; border: 1px solid #00ff9d; 
-            padding: 15px; color: #00ff9d; font-family: 'Rajdhani', sans-serif; font-size: 24px;
-            text-align: center; letter-spacing: 8px; width: 280px; outline: none;
-            box-shadow: 0 0 20px rgba(0, 255, 157, 0.2); 
-            text-transform: uppercase; margin-top: 20px; border-radius: 4px;
+            background: transparent; border: 1px solid rgba(255,255,255,0.3); 
+            padding: 15px; color: #fff; font-family: 'Rajdhani', sans-serif; font-size: 20px;
+            text-align: center; letter-spacing: 6px; width: 250px; outline: none;
+            text-transform: uppercase; margin-top: 30px; border-radius: 4px;
+            transition: border-color 0.3s;
         }
+        .login-input:focus { border-color: #00ff9d; }
 
     </style>
 </head>
 <body>
     <div class="bg-vignette"></div>
     <canvas id="glassCore"></canvas>
-
     <audio id="main-speaker" playsinline style="display:none;"></audio>
 
     <div class="hud-overlay" id="hud">
@@ -90,13 +90,13 @@
     </div>
 
     <div id="login-screen">
-        <h1 style="color:#fff; font-weight:400; letter-spacing:10px; font-size:40px;">EVYON <span style="color:#00ff9d; font-weight:700;">V8</span></h1>
-        <input type="password" id="password" class="login-input" placeholder="ACCESS" onkeydown="handleLoginKey(event)">
+        <h1 style="color:#fff; font-weight:300; letter-spacing:12px; font-size:28px;">EVYON <span style="color:#00ff9d; font-weight:600;">PLATINUM</span></h1>
+        <input type="password" id="password" class="login-input" placeholder="CODE" onkeydown="handleLoginKey(event)">
     </div>
 
     <div id="orb-interface">
         <div class="interaction-zone" onclick="toggleListening()"></div>
-        <div class="status-text" id="statusLabel">SYSTEM ONLINE</div>
+        <div class="status-text" id="statusLabel">SYSTEM READY</div>
     </div>
 
     <script>
@@ -104,30 +104,35 @@
         const INSTITUTION_DB = { "tec": { pass: "TEC2106", name: "Iván" }, "founder": { pass: "IVAN2106", name: "Sr. Iván" } };
         let apiKey = localStorage.getItem("evyon_api_key");
         let isListening = false;
-        let isSpeaking = false; // Nuevo flag para evitar congelamientos
+        let isSpeaking = false;
         
-        // COLORES (El nuevo Verde Esmeralda Tecnológico)
-        const COL_EMERALD = { r: 0, g: 255, b: 157 }; // #00ff9d
-        const COL_WHITE = { r: 255, g: 255, b: 255 };
-        const COL_CYAN = { r: 0, g: 200, b: 255 };
-        const COL_ERROR = { r: 255, g: 0, b: 85 };
+        // COLORES: La mezcla "Platinum Emerald"
+        const COL_EMERALD_GLOW = { r: 0, g: 255, b: 157 };   // El brillo (Verde EVYON)
+        const COL_PLATINUM = { r: 220, g: 230, b: 240 };     // La materia (Blanco Vidrio)
+        const COL_CYAN_GLOW = { r: 0, g: 200, b: 255 };      // Brillo al pensar
+        
+        let targetGlow = COL_EMERALD_GLOW; 
+        let currentGlow = { ...COL_EMERALD_GLOW }; 
+        
+        // FÍSICA SUAVE (Inercia)
+        let targetSpeed = 0.002;
+        let currentSpeed = 0.002;
+        
+        let targetScale = 1.0;
+        let currentScale = 1.0;
+        
+        let targetPulse = 0;
+        let currentPulse = 0;
 
-        let targetColor = COL_EMERALD; 
-        let currentColor = COL_EMERALD; 
-        
-        let rotationSpeed = 0.002;
-        let pulseIntensity = 0;
-        let sphereScale = 1.0; // Para efecto de expansión
-        
         let conversationHistory = [];
         const SILENT_MP3 = "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMD//////////////////////////////////wAAADFMYXZjNTguMTM0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASAAVrGHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//OECQAAAAAgAAAAAAALAAAAAAABAAABAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//OECQAAAAAAAAAAAAAAAAAAAAABAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//OECQAAAAAAAAAAAAAAAAAAAAABAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 
-        /* ================= MOTOR 3D "EMERALD GLASS" ================= */
+        /* ================= MOTOR 3D "PLATINUM CORE" ================= */
         const canvas = document.getElementById('glassCore');
         const ctx = canvas.getContext('2d');
         let width, height;
         let particles = [];
-        const numParticles = 350; // Más denso para efecto vidrio
+        const numParticles = 400; // Alta densidad para look "sólido"
 
         function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
         window.addEventListener('resize', resize);
@@ -139,133 +144,137 @@
             particles.push({ 
                 x: 180 * Math.sin(theta) * Math.cos(phi), 
                 y: 180 * Math.sin(theta) * Math.sin(phi), 
-                z: 180 * Math.cos(theta) 
+                z: 180 * Math.cos(theta),
+                phase: Math.random() * Math.PI * 2 // Para respiración individual
             });
         }
 
+        // Interpolación Lineal (Suavizado)
         function lerp(start, end, t) { return start * (1 - t) + end * t; }
 
-        function drawEmeraldCore() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.25)'; // Cola un poco más larga para fluidez
+        function drawPlatinumCore() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'; // Barrido limpio
             ctx.fillRect(0, 0, width, height);
             
-            // Transición de color suave
-            currentColor.r = lerp(currentColor.r, targetColor.r, 0.08);
-            currentColor.g = lerp(currentColor.g, targetColor.g, 0.08);
-            currentColor.b = lerp(currentColor.b, targetColor.b, 0.08);
+            // 1. CÁLCULO DE FÍSICA (SUAVIZADO)
+            currentSpeed = lerp(currentSpeed, targetSpeed, 0.05); // 5% de acercamiento por frame
+            currentScale = lerp(currentScale, targetScale, 0.05);
+            currentPulse = lerp(currentPulse, targetPulse, 0.1);
+            
+            // 2. CÁLCULO DE COLOR (SUAVIZADO)
+            currentGlow.r = lerp(currentGlow.r, targetGlow.r, 0.05);
+            currentGlow.g = lerp(currentGlow.g, targetGlow.g, 0.05);
+            currentGlow.b = lerp(currentGlow.b, targetGlow.b, 0.05);
 
             const cx = width / 2; const cy = height / 2;
-            
-            // EFECTO VIDRIO: Composite Lighter
             ctx.globalCompositeOperation = 'lighter'; 
             
             particles.forEach((p, i) => {
-                // Rotación
-                const rx = p.x * Math.cos(rotationSpeed) - p.z * Math.sin(rotationSpeed);
-                const rz = p.x * Math.sin(rotationSpeed) + p.z * Math.cos(rotationSpeed);
+                // Rotación usando la velocidad suavizada
+                const rx = p.x * Math.cos(currentSpeed) - p.z * Math.sin(currentSpeed);
+                const rz = p.x * Math.sin(currentSpeed) + p.z * Math.cos(currentSpeed);
                 p.x = rx; p.z = rz;
 
-                // Escala (Zoom de estado)
-                const baseRad = 350 * sphereScale;
+                // Escala General
+                const baseRad = 350 * currentScale;
                 const scale = baseRad / (baseRad + p.z);
                 const x2d = cx + p.x * scale; const y2d = cy + p.y * scale;
 
-                // Vibración
-                const vibe = (Math.random() - 0.5) * pulseIntensity;
-
-                const size = (2 * scale) + (pulseIntensity * 0.1);
+                // Efecto "Respiración" individual (micro-movimiento)
+                const breathe = Math.sin(Date.now() * 0.002 + p.phase) * 2;
                 
-                // Brillo del nodo
-                ctx.shadowBlur = 10; 
-                ctx.shadowColor = `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, 0.5)`;
-                ctx.fillStyle = `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${scale})`;
-                
-                ctx.beginPath(); ctx.arc(x2d + vibe, y2d + vibe, size, 0, Math.PI * 2); ctx.fill();
+                // Vibración por voz
+                const vibe = (Math.random() - 0.5) * currentPulse;
 
-                // Conexiones (Solo cercanas)
-                particles.forEach((p2, j) => {
-                    if (i !== j) {
-                        const dist = Math.sqrt((p.x-p2.x)**2 + (p.y-p2.y)**2 + (p.z-p2.z)**2);
-                        if (dist < 40) {
-                            ctx.beginPath();
-                            ctx.strokeStyle = `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${0.1 * scale})`;
-                            ctx.lineWidth = 0.5 * scale;
-                            ctx.moveTo(x2d + vibe, y2d + vibe);
-                            const scale2 = baseRad / (baseRad + p2.z);
-                            ctx.lineTo(cx + p2.x * scale2 + vibe, cy + p2.y * scale2 + vibe);
-                            ctx.stroke();
-                        }
-                    }
-                });
+                const size = (1.8 * scale) + (currentPulse * 0.05);
+                
+                // --- LA ESTÉTICA PLATINUM ---
+                // Sombra (Glow): Es el color Esmeralda/Cyan
+                ctx.shadowBlur = 15; 
+                ctx.shadowColor = `rgba(${currentGlow.r}, ${currentGlow.g}, ${currentGlow.b}, 0.6)`;
+                
+                // Relleno (Matter): Es Blanco/Plata (Casi blanco puro)
+                // Usamos alpha bajo para que parezca vidrio
+                ctx.fillStyle = `rgba(240, 255, 250, ${scale * 0.8})`; 
+                
+                ctx.beginPath(); 
+                ctx.arc(x2d + vibe, y2d + vibe, size, 0, Math.PI * 2); 
+                ctx.fill();
             });
+            
             ctx.globalCompositeOperation = 'source-over';
-            requestAnimationFrame(drawEmeraldCore);
+            requestAnimationFrame(drawPlatinumCore);
         }
-        drawEmeraldCore();
+        drawPlatinumCore();
 
-        /* ================= CONTROL DE ESTADOS (MEJORADO) ================= */
+        /* ================= CONTROL DE ESTADOS (SUAVE) ================= */
         function setVisualState(state) {
             const label = document.getElementById("statusLabel");
             const hud = document.getElementById("hud");
             
-            // Limpiar clases del HUD
             hud.className = "hud-overlay";
 
             if (state === 'idle') {
-                targetColor = COL_EMERALD; 
-                rotationSpeed = 0.002; 
-                pulseIntensity = 0; 
-                sphereScale = 1.0;
-                label.innerText = "SYSTEM ONLINE"; 
-                label.style.color = "#00ff9d";
+                // IDLE: Verde Esmeralda suave, lento
+                targetGlow = COL_EMERALD_GLOW; 
+                targetSpeed = 0.002; 
+                targetPulse = 0; 
+                targetScale = 1.0;
+                label.innerText = "ONLINE"; 
+                label.style.color = "rgba(255,255,255,0.5)";
             } 
             else if (state === 'listening') {
-                targetColor = COL_WHITE; // Blanco al escuchar
-                rotationSpeed = 0.001; 
-                pulseIntensity = 1; 
-                sphereScale = 1.2; // SE EXPANDE
+                // LISTENING: Blanco total, se expande suave
+                targetGlow = COL_PLATINUM; 
+                targetSpeed = 0.001; // Casi quieto
+                targetPulse = 2; 
+                targetScale = 1.3; // Expansión notable
                 label.innerText = "LISTENING"; 
                 label.style.color = "#fff";
                 hud.classList.add("hud-listening");
             } 
             else if (state === 'processing') {
-                targetColor = COL_CYAN; 
-                rotationSpeed = 0.1; // GIRO MUY RÁPIDO
-                pulseIntensity = 0; 
-                sphereScale = 0.8; // SE CONTRAE
-                label.innerText = "PROCESSING"; 
+                // PROCESSING: Cyan, acelera
+                targetGlow = COL_CYAN_GLOW; 
+                targetSpeed = 0.08; // Giro rápido
+                targetPulse = 0; 
+                targetScale = 0.9; // Contracción (pensando)
+                label.innerText = "THINKING"; 
                 label.style.color = "#00c8ff";
             } 
             else if (state === 'speaking') {
-                targetColor = COL_EMERALD; 
-                rotationSpeed = 0.005; 
-                pulseIntensity = 8; // VIBRACIÓN FUERTE
-                sphereScale = 1.1;
+                // SPEAKING: Esmeralda Activo, pulso fuerte
+                targetGlow = COL_EMERALD_GLOW; 
+                targetSpeed = 0.005; 
+                targetPulse = 10; // Vibración fuerte
+                targetScale = 1.1; 
                 label.innerText = "EVYON VOICE"; 
                 label.style.color = "#00ff9d";
                 hud.classList.add("hud-speaking");
             }
             else if (state === 'error') {
-                targetColor = COL_ERROR;
-                label.innerText = "SYSTEM ERROR";
-                label.style.color = "#ff0055";
+                targetGlow = { r: 255, g: 50, b: 50 };
+                targetSpeed = 0;
+                label.innerText = "OFFLINE";
+                label.style.color = "#ff3333";
                 hud.classList.add("hud-error");
             }
         }
 
-        /* ================= SISTEMA (LOGIN & AUDIO) ================= */
+        /* ================= SISTEMA ================= */
         function handleLoginKey(e) {
             if (e.key === "Enter") {
                 const userKey = Object.keys(INSTITUTION_DB).find(key => INSTITUTION_DB[key].pass === e.target.value);
                 if (userKey) {
                     checkApiKey();
+                    document.getElementById("login-screen").style.transition = "opacity 1s";
                     document.getElementById("login-screen").style.opacity = 0;
                     setTimeout(() => {
                         document.getElementById("login-screen").style.display = "none";
                         document.getElementById("orb-interface").style.display = "flex";
-                        setTimeout(() => document.getElementById("orb-interface").style.opacity = 1, 100);
-                        unlockAudio(); // Primer desbloqueo
-                    }, 500);
+                        setTimeout(() => document.getElementById("orb-interface").style.opacity = 1, 500);
+                        unlockAudio(); 
+                    }, 1000);
                 }
             }
         }
@@ -277,7 +286,7 @@
             }
         }
 
-        /* ================= LÓGICA DE VOZ (ROBUSTA) ================= */
+        /* ================= VOZ ================= */
         const speaker = document.getElementById("main-speaker");
 
         function unlockAudio() {
@@ -289,15 +298,13 @@
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) return null;
             const rec = new SpeechRecognition();
-            rec.lang = 'es-MX'; 
-            rec.interimResults = false;
+            rec.lang = 'es-MX'; rec.interimResults = false;
             
             rec.onstart = () => { isListening = true; setVisualState('listening'); };
             
-            // FIX: Si termina de escuchar y no estamos procesando, volver a idle
             rec.onend = () => { 
                 isListening = false; 
-                if (!isSpeaking && document.getElementById("statusLabel").innerText !== "PROCESSING") {
+                if (!isSpeaking && document.getElementById("statusLabel").innerText !== "THINKING") {
                     setVisualState('idle');
                 }
             };
@@ -309,20 +316,18 @@
         const recognitionEngine = initVoice();
 
         function toggleListening() {
-            unlockAudio(); // Siempre asegurar canal
-            if (isSpeaking) return; // No interrumpir si habla
-            
+            unlockAudio();
+            if (isSpeaking) return;
             if (isListening) recognitionEngine.stop();
             else recognitionEngine.start();
         }
 
         async function processAI(text) {
             setVisualState('processing');
-            isSpeaking = true; // Bloqueo lógico
+            isSpeaking = true; 
             
-            // CEREBRO: FLUIDO Y AMIGABLE
-            let sysPrompt = "Eres EVYON. Tu voz es fluida, cálida y natural. Respuestas concisas.";
-            if (text.match(/flojera|cansad|sueño/i)) sysPrompt = "Eres LEÓNIDAS. Energía alta y motivadora.";
+            let sysPrompt = "Eres EVYON. Voz fluida, natural. Respuestas concisas.";
+            if (text.match(/flojera|cansad|sueño/i)) sysPrompt = "Eres LEÓNIDAS. Energía alta.";
 
             try {
                 const res = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -345,7 +350,7 @@
         }
 
         async function playAudio(text) {
-            setVisualState('speaking'); // Estado Visual Hablando (Vibración Emerald)
+            setVisualState('speaking'); 
             
             try {
                 const res = await fetch("https://api.openai.com/v1/audio/speech", {
@@ -357,11 +362,9 @@
                 const url = URL.createObjectURL(blob);
                 
                 speaker.src = url;
-                
-                // FIX CRÍTICO: Asegurar que al terminar vuelva a IDLE
                 speaker.onended = () => {
                     isSpeaking = false;
-                    setVisualState('idle');
+                    setVisualState('idle'); // Regreso suave al reposo
                 };
                 
                 await speaker.play();
@@ -369,7 +372,7 @@
             } catch (err) {
                 console.error(err);
                 isSpeaking = false;
-                setVisualState('idle'); // Fallback seguro
+                setVisualState('idle'); 
             }
         }
     </script>
