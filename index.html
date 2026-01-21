@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EVYON V7.1 | GLASS CORE</title>
+    <title>EVYON V7.2 | FLUID CORE</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&display=swap');
 
@@ -26,14 +26,13 @@
             z-index: -5;
         }
         
-        /* --- CANVAS 3D (CEREBRO DE CRISTAL) --- */
+        /* --- CANVAS 3D --- */
         canvas {
             position: absolute; top: 0; left: 0; z-index: 1;
-            /* Filtro sutil para suavizar los píxeles y dar toque de lente */
             filter: blur(0.5px) contrast(1.2); 
         }
 
-        /* --- HUD (BORDES TÁCTICOS) --- */
+        /* --- HUD --- */
         .hud-overlay {
             position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 5;
             padding: 20px;
@@ -43,8 +42,7 @@
             border: 2px solid rgba(60, 209, 134, 0.3); opacity: 0.6;
             transition: all 0.5s ease;
         }
-        /* Al hablar, las esquinas brillarán */
-        .speaking .corner { border-color: #facc15; box-shadow: 0 0 15px rgba(250, 204, 21, 0.5); }
+        .speaking .corner { border-color: #22d3ee; box-shadow: 0 0 20px rgba(34, 211, 238, 0.6); } /* Azul Cyan al hablar (más amigable) */
         
         .tl { top: 20px; left: 20px; border-right: none; border-bottom: none; }
         .tr { top: 20px; right: 20px; border-left: none; border-bottom: none; }
@@ -58,17 +56,14 @@
             position: relative; width: 100%; height: 100%;
         }
 
-        /* Zona de interacción invisible (Toda la pantalla central) */
         .interaction-zone {
             width: 300px; height: 300px;
             border-radius: 50%;
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             cursor: pointer; z-index: 20;
-            /* background: rgba(255,0,0,0.1); /* Debug para ver donde cliquear */
         }
 
-        /* Texto de estado limpio */
         .status-text {
             position: absolute; bottom: 15%;
             font-size: 18px; letter-spacing: 8px; font-weight: 600;
@@ -79,7 +74,7 @@
             transition: color 0.3s;
         }
 
-        /* Login Screen Minimalista */
+        /* Login */
         #login-screen {
             position: absolute; z-index: 20; text-align: center;
             background: rgba(0,0,0,0.9); width: 100%; height: 100%;
@@ -93,13 +88,11 @@
             text-transform: uppercase; margin-top: 20px;
             border-radius: 4px;
         }
-        .login-input:focus { border-color: #3cd186; box-shadow: 0 0 50px rgba(60,209,134,0.3); }
 
     </style>
 </head>
 <body>
     <div class="bg-vignette"></div>
-    
     <canvas id="glassCore"></canvas>
 
     <div class="hud-overlay" id="hud">
@@ -110,7 +103,7 @@
     </div>
 
     <div id="login-screen">
-        <h1 style="color:#fff; font-weight:300; letter-spacing:12px; font-size:32px; opacity:0.9;">EVYON <span style="color:#3cd186; font-weight:700;">V7</span></h1>
+        <h1 style="color:#fff; font-weight:300; letter-spacing:12px; font-size:32px; opacity:0.9;">EVYON <span style="color:#3cd186; font-weight:700;">V7.2</span></h1>
         <input type="password" id="password" class="login-input" placeholder="CODE" onkeydown="handleLoginKey(event)">
     </div>
 
@@ -130,24 +123,21 @@
         let currentUser = null;
         let isListening = false;
         
-        // Colores Base (RGB)
-        let targetColor = { r: 60, g: 209, b: 134 }; // Verde Evyon
-        let currentColor = { r: 60, g: 209, b: 134 }; // Color actual (para transiciones suaves)
+        let targetColor = { r: 60, g: 209, b: 134 }; 
+        let currentColor = { r: 60, g: 209, b: 134 }; 
         
-        // Dinámicas de la esfera
         let rotationSpeed = 0.003;
         let pulseIntensity = 0;
         let particleSizeBase = 1.5;
         
-        // Memoria Neural
         let conversationHistory = [];
 
-        /* ================= MOTOR 3D "GLASS CORE" ================= */
+        /* ================= MOTOR 3D ================= */
         const canvas = document.getElementById('glassCore');
         const ctx = canvas.getContext('2d');
         let width, height;
         let particles = [];
-        const numParticles = 300; // Alta densidad
+        const numParticles = 300; 
 
         function resize() {
             width = canvas.width = window.innerWidth;
@@ -156,7 +146,6 @@
         window.addEventListener('resize', resize);
         resize();
 
-        // Inicializar Partículas en Esfera
         for(let i=0; i<numParticles; i++) {
             const theta = Math.acos(-1 + (2 * i) / numParticles);
             const phi = Math.sqrt(numParticles * Math.PI) * theta;
@@ -167,120 +156,96 @@
             });
         }
 
-        // Función de interpolación de color (Lerp)
         function lerp(start, end, t) { return start * (1 - t) + end * t; }
 
         function drawGlassCore() {
-            // Efecto de barrido suave (Trail effect)
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; // Deja una estela sutil
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; 
             ctx.fillRect(0, 0, width, height);
             
-            // Suavizar transición de color
             currentColor.r = lerp(currentColor.r, targetColor.r, 0.05);
             currentColor.g = lerp(currentColor.g, targetColor.g, 0.05);
             currentColor.b = lerp(currentColor.b, targetColor.b, 0.05);
 
             const cx = width / 2;
             const cy = height / 2;
-            
-            // Configuración de "Luz de Cristal"
-            ctx.globalCompositeOperation = 'lighter'; // Mezcla aditiva (clave para el brillo)
+            ctx.globalCompositeOperation = 'lighter'; 
             
             particles.forEach((p, i) => {
-                // Rotación 3D
                 const rx = p.x * Math.cos(rotationSpeed) - p.z * Math.sin(rotationSpeed);
                 const rz = p.x * Math.sin(rotationSpeed) + p.z * Math.cos(rotationSpeed);
                 p.x = rx; p.z = rz;
 
-                const scale = 350 / (350 + p.z); // Perspectiva
+                const scale = 350 / (350 + p.z);
                 const x2d = cx + p.x * scale;
                 const y2d = cy + p.y * scale;
 
-                // Vibración Audio-Reactiva
                 const vibeX = (Math.random() - 0.5) * pulseIntensity;
                 const vibeY = (Math.random() - 0.5) * pulseIntensity;
-
-                // Dibujar Nodo (Efecto Glow)
                 const size = (particleSizeBase * scale) + (pulseIntensity * 0.2);
                 
-                // El brillo exterior (Halo)
                 ctx.shadowBlur = 15; 
                 ctx.shadowColor = `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, 0.8)`;
-                
-                // El núcleo del nodo
                 ctx.fillStyle = `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${scale})`;
                 
                 ctx.beginPath();
                 ctx.arc(x2d + vibeX, y2d + vibeY, size, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Conexiones neuronales (Líneas sutiles)
-                // Solo conectamos nodos muy cercanos para no ensuciar el diseño
                 particles.forEach((p2, j) => {
                     if (i !== j) {
-                        const dx = p.x - p2.x;
-                        const dy = p.y - p2.y;
-                        const dz = p.z - p2.z;
-                        const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
-                        
+                        const dist = Math.sqrt((p.x-p2.x)**2 + (p.y-p2.y)**2 + (p.z-p2.z)**2);
                         if (dist < 35) {
                             ctx.beginPath();
                             ctx.strokeStyle = `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${0.15 * scale})`;
                             ctx.lineWidth = 0.5 * scale;
                             ctx.moveTo(x2d + vibeX, y2d + vibeY);
-                            
                             const scale2 = 350 / (350 + p2.z);
-                            const x2d2 = cx + p2.x * scale2;
-                            const y2d2 = cy + p2.y * scale2;
-                            
-                            ctx.lineTo(x2d2 + vibeX, y2d2 + vibeY);
+                            ctx.lineTo(cx + p2.x * scale2 + vibeX, cy + p2.y * scale2 + vibeY);
                             ctx.stroke();
                         }
                     }
                 });
             });
-            
-            // Restaurar modo de fusión para el siguiente frame
             ctx.globalCompositeOperation = 'source-over';
             requestAnimationFrame(drawGlassCore);
         }
         drawGlassCore();
 
-        /* ================= LÓGICA DE ESTADO ================= */
+        /* ================= ESTADOS ================= */
         function updateStateVisuals(state) {
             const label = document.getElementById("statusLabel");
             const hud = document.getElementById("hud");
             
-            hud.className = "hud-overlay"; // Reset HUD
+            hud.className = "hud-overlay"; 
 
             if (state === 'idle') {
-                targetColor = { r: 60, g: 209, b: 134 }; // Verde Original
+                targetColor = { r: 60, g: 209, b: 134 }; // Verde
                 rotationSpeed = 0.003;
                 pulseIntensity = 0;
                 label.innerText = "SYSTEM ONLINE";
                 label.style.color = "#3cd186";
             }
             else if (state === 'listening') {
-                targetColor = { r: 255, g: 255, b: 255 }; // Blanco Puro
-                rotationSpeed = 0.001; // Lento (Atención)
-                pulseIntensity = 2; // Ligero temblor
+                targetColor = { r: 255, g: 255, b: 255 }; // Blanco
+                rotationSpeed = 0.001; 
+                pulseIntensity = 2; 
                 label.innerText = "LISTENING";
                 label.style.color = "#fff";
             }
             else if (state === 'processing') {
-                targetColor = { r: 34, g: 211, b: 238 }; // Cyan Neural
-                rotationSpeed = 0.08; // Giro muy rápido
+                targetColor = { r: 34, g: 211, b: 238 }; // Cyan
+                rotationSpeed = 0.08; 
                 pulseIntensity = 0;
                 label.innerText = "PROCESSING";
                 label.style.color = "#22d3ee";
             }
             else if (state === 'speaking') {
-                targetColor = { r: 250, g: 204, b: 21 }; // Dorado Voz
+                targetColor = { r: 34, g: 211, b: 238 }; // Cyan Amigable (En vez de dorado agresivo)
                 rotationSpeed = 0.005;
-                pulseIntensity = 6; // Vibración fuerte
-                label.innerText = "EVYON VOICE";
-                label.style.color = "#facc15";
-                hud.classList.add("speaking"); // Activar brillo en esquinas
+                pulseIntensity = 5; 
+                label.innerText = "EVYON ONLINE";
+                label.style.color = "#22d3ee";
+                hud.classList.add("speaking"); 
             }
         }
 
@@ -315,49 +280,36 @@
         function initVoice() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) return null;
-            
             const recognition = new SpeechRecognition();
-            recognition.lang = 'es-MX';
-            recognition.interimResults = false;
-
+            recognition.lang = 'es-MX'; recognition.interimResults = false;
             recognition.onstart = () => { isListening = true; updateStateVisuals('listening'); };
-            recognition.onend = () => { 
-                isListening = false;
-                // Solo volver a idle si no estamos procesando
-                if (document.getElementById("statusLabel").innerText !== "PROCESSING") updateStateVisuals('idle'); 
-            };
-            
-            recognition.onresult = async (e) => {
-                const text = e.results[0][0].transcript;
-                // Ya no mostramos transcripción en pantalla
-                await processAI(text);
-            };
-
+            recognition.onend = () => { isListening = false; if (document.getElementById("statusLabel").innerText !== "PROCESSING") updateStateVisuals('idle'); };
+            recognition.onresult = async (e) => { await processAI(e.results[0][0].transcript); };
             return recognition;
         }
 
         const recognitionEngine = initVoice();
-
-        function toggleListening() {
-            if (!recognitionEngine) return;
-            if (isListening) recognitionEngine.stop();
-            else recognitionEngine.start();
-        }
+        function toggleListening() { if (recognitionEngine) isListening ? recognitionEngine.stop() : recognitionEngine.start(); }
 
         async function processAI(text) {
             updateStateVisuals('processing');
             
-            // Prompt Dinámico V5.1
-            let sysPrompt = "Eres EVYON. Respuestas cortas, habladas y útiles. Tono profesional.";
-            if (text.match(/flojera|cansad|sueño/i)) sysPrompt = "Eres LEÓNIDAS. Grita y ordena entrenar. Sé agresivo.";
-            if (text.match(/dolor|lesi|herid/i)) sysPrompt = "Eres Dr. EVYON. Sé clínico y protector.";
+            // PROMPT FLUIDO & AMIGABLE
+            // Eliminamos "respuestas cortas y autoritarias".
+            let sysPrompt = `Eres EVYON. Tu voz es fluida, cálida y servicial.
+            OBJETIVO: Ser el asistente perfecto.
+            ESTILO: Conversacional, usa conectores naturales, evita sonar robótico. Sé conciso pero amable.`;
+
+            // Mantener personalidades fuertes si se activan triggers específicos
+            if (text.match(/flojera|cansad|sueño/i)) sysPrompt = "Eres LEÓNIDAS. Tono enérgico y motivador. ¡No dejes que se rindan!";
+            if (text.match(/dolor|lesi|herid/i)) sysPrompt = "Eres Dr. EVYON. Empático y cuidadoso.";
 
             const messages = [{ role: "system", content: sysPrompt }, ...conversationHistory, { role: "user", content: text }];
 
             try {
                 const res = await fetch("https://api.openai.com/v1/chat/completions", {
                     method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
-                    body: JSON.stringify({ model: "gpt-4o", messages: messages, max_tokens: 120 })
+                    body: JSON.stringify({ model: "gpt-4o", messages: messages, max_tokens: 150 })
                 });
                 const data = await res.json();
                 if (data.error) throw new Error("API Error");
@@ -367,10 +319,7 @@
                 
                 await playAudio(reply);
 
-            } catch (err) {
-                console.error(err); // Solo log en consola, no en pantalla
-                updateStateVisuals('idle');
-            }
+            } catch (err) { console.error(err); updateStateVisuals('idle'); }
         }
 
         async function playAudio(text) {
@@ -378,26 +327,17 @@
             try {
                 const res = await fetch("https://api.openai.com/v1/audio/speech", {
                     method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
-                    body: JSON.stringify({ model: "tts-1", voice: "onyx", input: text })
+                    body: JSON.stringify({ 
+                        model: "tts-1", 
+                        voice: "nova", // CAMBIO CLAVE: Voz Nova (Fluida/Amigable)
+                        input: text 
+                    })
                 });
-
                 const blob = await res.blob();
                 const audio = new Audio(URL.createObjectURL(blob));
-                
                 audio.onended = () => updateStateVisuals('idle');
-                
-                // Intentar reproducir (sin reporte visual de errores menores)
-                try {
-                    await audio.play();
-                } catch (playErr) {
-                    console.warn("Autoplay bloqueado o interrumpido:", playErr);
-                    // No cambiamos el estado visual a error, dejamos que el usuario intente de nuevo
-                }
-
-            } catch (err) {
-                console.error("Error Fetch Audio:", err);
-                updateStateVisuals('idle');
-            }
+                try { await audio.play(); } catch (e) { console.warn(e); }
+            } catch (err) { console.error(err); updateStateVisuals('idle'); }
         }
     </script>
 </body>
