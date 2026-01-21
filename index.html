@@ -2,8 +2,8 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EVYON V9 | DIAMOND</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>EVYON OS | MOBILE</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap');
 
@@ -12,35 +12,43 @@
         body {
             margin: 0; padding: 0;
             background-color: #000;
-            height: 100vh; width: 100vw;
+            /* Usa dvh (Dynamic Viewport Height) para evitar problemas con la barra de Safari/Chrome móvil */
+            height: 100dvh; width: 100vw;
             display: flex; justify-content: center; align-items: center;
             font-family: 'Rajdhani', sans-serif;
             overflow: hidden;
             color: #fff;
+            position: fixed; /* Evita rebote en iOS */
         }
 
-        /* FONDO: NEGRO PROFUNDO (Cero verde en el fondo) */
         .bg-vignette {
             position: absolute; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, #111 0%, #000 85%);
+            background: radial-gradient(circle at center, #111 0%, #000 90%);
             z-index: -5;
         }
         
-        /* CANVAS: Mayor contraste para resaltar el blanco */
         canvas { position: absolute; top: 0; left: 0; z-index: 1; filter: contrast(1.1); }
 
-        /* HUD: Muy sutil, casi invisible */
-        .hud-overlay { position: absolute; width: 100%; height: 100%; pointer-events: none; z-index: 5; padding: 30px; }
+        /* HUD RESPONSIVO (Se adapta a zonas seguras del iPhone/Android) */
+        .hud-overlay { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            pointer-events: none; z-index: 5; 
+            padding: max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+        }
+        
+        /* Esquinas más pequeñas en móvil */
         .corner { position: absolute; width: 20px; height: 20px; border: 1px solid rgba(255, 255, 255, 0.15); transition: all 0.5s ease; }
         
-        /* UI STATES HUD */
         .hud-speaking .corner { border-color: #00ff9d; box-shadow: 0 0 10px rgba(0, 255, 157, 0.3); }
         .hud-error .corner { border-color: #ff3333; }
         
-        .tl { top: 30px; left: 30px; border-right: none; border-bottom: none; }
-        .tr { top: 30px; right: 30px; border-left: none; border-bottom: none; }
-        .bl { bottom: 30px; left: 30px; border-right: none; border-top: none; }
-        .br { bottom: 30px; right: 30px; border-left: none; border-top: none; }
+        .tl { top: var(--pad); left: var(--pad); border-right: none; border-bottom: none; }
+        .tr { top: var(--pad); right: var(--pad); border-left: none; border-bottom: none; }
+        .bl { bottom: var(--pad); left: var(--pad); border-right: none; border-top: none; }
+        .br { bottom: var(--pad); right: var(--pad); border-left: none; border-top: none; }
+
+        /* VARIABLES CSS PARA PADDING */
+        .hud-overlay { --pad: 25px; }
 
         /* UI */
         #orb-interface {
@@ -55,24 +63,25 @@
         }
 
         .status-text {
-            position: absolute; bottom: 12%;
+            position: absolute; bottom: 15%;
             font-size: 14px; letter-spacing: 6px; font-weight: 500;
-            color: rgba(255, 255, 255, 0.3); /* Gris muy tenue */
+            color: rgba(255, 255, 255, 0.3);
             text-transform: uppercase; pointer-events: none; transition: color 0.5s;
             text-align: center; width: 100%;
         }
 
-        /* LOGIN: Minimalista Puro */
+        /* LOGIN ADJUSTADO A MÓVIL */
         #login-screen {
             position: absolute; z-index: 20; text-align: center;
             background: #000; width: 100%; height: 100%;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
+            padding-bottom: 10%; /* Sube un poco visualmente */
         }
         .login-input {
             background: transparent; border: 1px solid rgba(255,255,255,0.2); 
             padding: 12px; color: #fff; font-family: 'Rajdhani', sans-serif; font-size: 18px;
-            text-align: center; letter-spacing: 5px; width: 220px; outline: none;
-            text-transform: uppercase; margin-top: 25px; border-radius: 2px;
+            text-align: center; letter-spacing: 5px; width: 70%; max-width: 250px; outline: none;
+            text-transform: uppercase; margin-top: 25px; border-radius: 4px;
             transition: border-color 0.3s, box-shadow 0.3s;
         }
         .login-input:focus { border-color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.1); }
@@ -90,7 +99,7 @@
     </div>
 
     <div id="login-screen">
-        <h1 style="color:#fff; font-weight:300; letter-spacing:8px; font-size:24px;">EVYON <span style="color:#fff; font-weight:600; opacity:0.8;">OS</span></h1>
+        <h1 style="color:#fff; font-weight:300; letter-spacing:8px; font-size:24px; margin-bottom: 10px;">EVYON <span style="color:#fff; font-weight:600; opacity:0.8;">OS</span></h1>
         <input type="password" id="password" class="login-input" placeholder="ACCESS" onkeydown="handleLoginKey(event)">
     </div>
 
@@ -106,40 +115,54 @@
         let isListening = false;
         let isSpeaking = false;
         
-        // COLORES: PALETA DIAMOND GLASS
-        // El truco: Base blanca, Glow muy tenue
-        const COL_EMERALD_HINT = { r: 0, g: 255, b: 157, a: 0.3 }; // Esmeralda al 30% de intensidad
-        const COL_SILVER = { r: 240, g: 245, b: 255 };             // Plata puro
-        const COL_CYAN_HINT = { r: 100, g: 220, b: 255, a: 0.4 };  // Cyan sutil
+        // COLORES DIAMOND GLASS
+        const COL_EMERALD_HINT = { r: 0, g: 255, b: 157 };
+        const COL_SILVER = { r: 240, g: 245, b: 255 }; 
+        const COL_CYAN_HINT = { r: 0, g: 220, b: 255 };
         
-        // Estado actual del GLOW (Sombra)
-        let targetGlowColor = { r: 0, g: 255, b: 157 };
-        let targetGlowAlpha = 0.2; // Idle: Apenas visible
-        
-        let currentGlowColor = { r: 0, g: 255, b: 157 };
-        let currentGlowAlpha = 0.2;
+        let targetGlowColor = COL_EMERALD_HINT;
+        let targetGlowAlpha = 0.25;
+        let currentGlowColor = { ...COL_EMERALD_HINT };
+        let currentGlowAlpha = 0.25;
 
-        // FÍSICA
-        let targetSpeed = 0.0015; // Rotación lenta y elegante
+        // FÍSICA RESPONSIVA
+        let targetSpeed = 0.0015;
         let currentSpeed = 0.0015;
-        
         let targetScale = 1.0;
         let currentScale = 1.0;
-        
         let targetPulse = 0;
         let currentPulse = 0;
+        
+        // VARIABLE MAESTRA DE TAMAÑO
+        let baseRadius = 150; 
 
         let conversationHistory = [];
         const SILENT_MP3 = "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMD//////////////////////////////////wAAADFMYXZjNTguMTM0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASAAVrGHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//OECQAAAAAgAAAAAAALAAAAAAABAAABAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//OECQAAAAAAAAAAAAAAAAAAAAABAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//OECQAAAAAAAAAAAAAAAAAAAAABAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 
-        /* ================= MOTOR 3D "DIAMOND CORE" ================= */
+        /* ================= MOTOR 3D RESPONSIVO ================= */
         const canvas = document.getElementById('glassCore');
         const ctx = canvas.getContext('2d');
         let width, height;
         let particles = [];
-        const numParticles = 450; // Más partículas, más pequeñas
+        const numParticles = 400; 
 
-        function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
+        // AJUSTE DE TAMAÑO INTELIGENTE
+        function resize() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            
+            // Soporte Retina (Alta Densidad)
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            ctx.scale(dpr, dpr);
+
+            // CÁLCULO DE RADIO DINÁMICO
+            // La esfera ocupará el 40% del ancho del celular (o alto, lo que sea menor)
+            // Esto asegura que NUNCA se salga de la pantalla
+            const minDim = Math.min(width, height);
+            baseRadius = minDim * 0.40; 
+        }
         window.addEventListener('resize', resize);
         resize();
 
@@ -147,68 +170,70 @@
             const theta = Math.acos(-1 + (2 * i) / numParticles);
             const phi = Math.sqrt(numParticles * Math.PI) * theta;
             particles.push({ 
-                x: 180 * Math.sin(theta) * Math.cos(phi), 
-                y: 180 * Math.sin(theta) * Math.sin(phi), 
-                z: 180 * Math.cos(theta),
+                x: Math.sin(theta) * Math.cos(phi), // Normalizado (unitario)
+                y: Math.sin(theta) * Math.sin(phi), 
+                z: Math.cos(theta),
                 phase: Math.random() * Math.PI * 2
             });
         }
 
         function lerp(start, end, t) { return start * (1 - t) + end * t; }
 
-        function drawDiamondCore() {
-            ctx.clearRect(0, 0, width, height); // Limpieza total para transparencia
+        function drawMobileCore() {
+            ctx.clearRect(0, 0, width, height);
             
-            // Suavizado de variables físicas
             currentSpeed = lerp(currentSpeed, targetSpeed, 0.05);
             currentScale = lerp(currentScale, targetScale, 0.05);
             currentPulse = lerp(currentPulse, targetPulse, 0.1);
             
-            // Suavizado de color
             currentGlowColor.r = lerp(currentGlowColor.r, targetGlowColor.r, 0.05);
             currentGlowColor.g = lerp(currentGlowColor.g, targetGlowColor.g, 0.05);
             currentGlowColor.b = lerp(currentGlowColor.b, targetGlowColor.b, 0.05);
             currentGlowAlpha = lerp(currentGlowAlpha, targetGlowAlpha, 0.05);
 
             const cx = width / 2; const cy = height / 2;
-            ctx.globalCompositeOperation = 'lighter'; // Efecto luz superpuesta
+            ctx.globalCompositeOperation = 'lighter'; 
             
+            // EL RADIO ACTUAL (Responsive * Escala de Animación)
+            const currentRadius = baseRadius * currentScale;
+
             particles.forEach((p, i) => {
                 // Rotación
-                const rx = p.x * Math.cos(currentSpeed) - p.z * Math.sin(currentSpeed);
-                const rz = p.x * Math.sin(currentSpeed) + p.z * Math.cos(currentSpeed);
+                let x = p.x; let z = p.z;
+                const rx = x * Math.cos(currentSpeed) - z * Math.sin(currentSpeed);
+                const rz = x * Math.sin(currentSpeed) + z * Math.cos(currentSpeed);
                 p.x = rx; p.z = rz;
 
-                const baseRad = 350 * currentScale;
-                const scale = baseRad / (baseRad + p.z);
-                const x2d = cx + p.x * scale; const y2d = cy + p.y * scale;
+                // Proyección 3D
+                // Usamos el Radio Dinámico aquí
+                const zScale = (currentRadius + 200) / ((currentRadius + 200) + (p.z * currentRadius)); 
+                
+                const x2d = cx + (p.x * currentRadius) * zScale; 
+                const y2d = cy + (p.y * currentRadius) * zScale;
 
-                // Respiración muy sutil
+                // Respiración
                 const breathe = Math.sin(Date.now() * 0.0015 + p.phase) * 1.5;
                 const vibe = (Math.random() - 0.5) * currentPulse;
 
-                // TAMAÑO: Más pequeños para efecto "polvo"
-                const size = (1.2 * scale) + (currentPulse * 0.05);
+                // Tamaño de puntos relativo al radio (para que no sean gigantes en móvil)
+                const dotBaseSize = currentRadius * 0.008; // 0.8% del radio
+                const size = Math.max(0.5, (dotBaseSize * zScale) + (currentPulse * 0.05));
                 
-                // COLOR Y GLOW
-                // El Glow es el que lleva el color (Verde/Cyan) pero muy transparente
-                ctx.shadowBlur = 8 * scale; 
+                // Color
+                ctx.shadowBlur = 8 * zScale; 
                 ctx.shadowColor = `rgba(${currentGlowColor.r}, ${currentGlowColor.g}, ${currentGlowColor.b}, ${currentGlowAlpha})`;
-                
-                // El Cuerpo es BLANCO VIDRIO (Casi transparente)
-                // Usamos alpha muy bajo (0.4) para que se vea a través
-                ctx.fillStyle = `rgba(${COL_SILVER.r}, ${COL_SILVER.g}, ${COL_SILVER.b}, ${scale * 0.4})`; 
+                ctx.fillStyle = `rgba(${COL_SILVER.r}, ${COL_SILVER.g}, ${COL_SILVER.b}, ${zScale * 0.5})`; 
                 
                 ctx.beginPath(); 
                 ctx.arc(x2d + vibe, y2d + vibe, size, 0, Math.PI * 2); 
                 ctx.fill();
             });
             
-            requestAnimationFrame(drawDiamondCore);
+            requestAnimationFrame(drawMobileCore);
         }
-        drawDiamondCore();
+        drawMobileCore();
 
-        /* ================= CONTROL DE ESTADOS (FINO) ================= */
+        /* ================= ESTADOS ================= */
         function setVisualState(state) {
             const label = document.getElementById("statusLabel");
             const hud = document.getElementById("hud");
@@ -216,51 +241,30 @@
             hud.className = "hud-overlay";
 
             if (state === 'idle') {
-                // IDLE: Plata con un "toque" de esmeralda (Alpha 0.25)
-                targetGlowColor = { r: 0, g: 255, b: 157 };
-                targetGlowAlpha = 0.25; 
-                targetSpeed = 0.0015; 
-                targetPulse = 0; 
-                targetScale = 1.0;
-                label.innerText = "ONLINE"; 
-                label.style.color = "rgba(255,255,255,0.3)";
+                targetGlowColor = COL_EMERALD_HINT; targetGlowAlpha = 0.25; 
+                targetSpeed = 0.0015; targetPulse = 0; targetScale = 1.0;
+                label.innerText = "ONLINE"; label.style.color = "rgba(255,255,255,0.3)";
             } 
             else if (state === 'listening') {
-                // LISTENING: Blanco puro (Alpha 0.6)
-                targetGlowColor = { r: 255, g: 255, b: 255 };
-                targetGlowAlpha = 0.6;
-                targetSpeed = 0.0005; // Congelado
-                targetPulse = 1; 
-                targetScale = 1.25; 
-                label.innerText = "LISTENING"; 
-                label.style.color = "#fff";
+                targetGlowColor = COL_SILVER; targetGlowAlpha = 0.6;
+                targetSpeed = 0.0005; targetPulse = 1; targetScale = 1.15; // Menos expansión en móvil
+                label.innerText = "LISTENING"; label.style.color = "#fff";
+                hud.classList.add("hud-listening");
             } 
             else if (state === 'processing') {
-                // PROCESSING: Cyan Sutil (Alpha 0.4)
-                targetGlowColor = { r: 0, g: 220, b: 255 };
-                targetGlowAlpha = 0.4;
-                targetSpeed = 0.08; 
-                targetPulse = 0; 
-                targetScale = 0.9; 
-                label.innerText = "PROCESSING"; 
-                label.style.color = "rgba(0, 220, 255, 0.7)";
+                targetGlowColor = COL_CYAN_HINT; targetGlowAlpha = 0.5;
+                targetSpeed = 0.08; targetPulse = 0; targetScale = 0.9; 
+                label.innerText = "PROCESSING"; label.style.color = "rgba(0, 220, 255, 0.7)";
             } 
             else if (state === 'speaking') {
-                // SPEAKING: Esmeralda Activo (Alpha 0.5 - No saturado)
-                targetGlowColor = { r: 0, g: 255, b: 157 };
-                targetGlowAlpha = 0.5;
-                targetSpeed = 0.004; 
-                targetPulse = 8; 
-                targetScale = 1.1; 
-                label.innerText = "EVYON VOICE"; 
-                label.style.color = "#00ff9d";
+                targetGlowColor = COL_EMERALD_HINT; targetGlowAlpha = 0.5;
+                targetSpeed = 0.004; targetPulse = 6; targetScale = 1.05; 
+                label.innerText = "EVYON OS"; label.style.color = "#00ff9d";
                 hud.classList.add("hud-speaking");
             }
             else if (state === 'error') {
-                targetGlowColor = { r: 255, g: 50, b: 50 };
-                targetGlowAlpha = 0.8;
-                label.innerText = "OFFLINE";
-                label.style.color = "#ff3333";
+                targetGlowColor = { r: 255, g: 50, b: 50 }; targetGlowAlpha = 0.8;
+                label.innerText = "OFFLINE"; label.style.color = "#ff3333";
                 hud.classList.add("hud-error");
             }
         }
@@ -271,6 +275,9 @@
                 const userKey = Object.keys(INSTITUTION_DB).find(key => INSTITUTION_DB[key].pass === e.target.value);
                 if (userKey) {
                     checkApiKey();
+                    // Ocultar teclado en móvil
+                    document.getElementById("password").blur();
+                    
                     document.getElementById("login-screen").style.transition = "opacity 0.8s";
                     document.getElementById("login-screen").style.opacity = 0;
                     setTimeout(() => {
@@ -290,7 +297,7 @@
             }
         }
 
-        /* ================= VOZ ================= */
+        /* ================= VOZ & AUDIO ================= */
         const speaker = document.getElementById("main-speaker");
 
         function unlockAudio() {
