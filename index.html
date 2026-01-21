@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EVYON V7.4 | UNLOCKED</title>
+    <title>EVYON V7.5 | UNLOCKED</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&display=swap');
 
@@ -49,7 +49,6 @@
             width: 300px; height: 300px; border-radius: 50%;
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             cursor: pointer; z-index: 20;
-            /* -webkit-tap-highlight-color: transparent; */
         }
 
         .status-text {
@@ -80,13 +79,15 @@
     <div class="bg-vignette"></div>
     <canvas id="glassCore"></canvas>
 
+    <audio id="main-speaker" playsinline style="display:none;"></audio>
+
     <div class="hud-overlay" id="hud">
         <div class="corner tl"></div><div class="corner tr"></div>
         <div class="corner bl"></div><div class="corner br"></div>
     </div>
 
     <div id="login-screen">
-        <h1 style="color:#fff; font-weight:300; letter-spacing:12px; font-size:32px; opacity:0.9;">EVYON <span style="color:#3cd186; font-weight:700;">V7.4</span></h1>
+        <h1 style="color:#fff; font-weight:300; letter-spacing:12px; font-size:32px; opacity:0.9;">EVYON <span style="color:#3cd186; font-weight:700;">V7.5</span></h1>
         <input type="password" id="password" class="login-input" placeholder="CODE" onkeydown="handleLoginKey(event)">
     </div>
 
@@ -109,9 +110,9 @@
         let particleSizeBase = 1.5;
         let conversationHistory = [];
 
-        // TRUCO DE AUDIO: Buffer de silencio
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
+        // SILENT MP3 (Para engañar al navegador y abrir el canal de audio)
+        const SILENT_MP3 = "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMD//////////////////////////////////wAAADFMYXZjNTguMTM0AAAAAAAAAAAAAAAAJAAAAAAAAAAAASAAVrGHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//OECQAAAAAgAAAAAAALAAAAAAABAAABAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//OECQAAAAAAAAAAAAAAAAAAAAABAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//OECQAAAAAAAAAAAAAAAAAAAAABAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+
         /* ================= VISUALS (GLASS CORE) ================= */
         const canvas = document.getElementById('glassCore');
         const ctx = canvas.getContext('2d');
@@ -185,7 +186,7 @@
             }
         }
 
-        /* ================= LOGIC & AUDIO UNLOCK ================= */
+        /* ================= LOGIC & HARD AUDIO FIX ================= */
         function handleLoginKey(e) {
             if (e.key === "Enter") {
                 const userKey = Object.keys(INSTITUTION_DB).find(key => INSTITUTION_DB[key].pass === e.target.value);
@@ -197,7 +198,7 @@
                     ui.style.display = "flex";
                     setTimeout(() => ui.style.opacity = 1, 100);
                     
-                    // Primer intento de desbloqueo al login
+                    // INTENTO 1 DE DESBLOQUEO AL LOGIN
                     unlockAudioEngine();
                 }
             }
@@ -210,17 +211,17 @@
             }
         }
 
-        // --- LA LLAVE MAESTRA DEL AUDIO ---
+        // --- LA SOLUCIÓN DEFINITIVA: EL ALTAVOZ PERMANENTE ---
+        const speaker = document.getElementById("main-speaker");
+
         function unlockAudioEngine() {
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-            // Reproducir silencio vacío para "calentar" el canal
-            const buffer = audioCtx.createBuffer(1, 1, 22050);
-            const source = audioCtx.createBufferSource();
-            source.buffer = buffer;
-            source.connect(audioCtx.destination);
-            source.start(0);
+            // Reproducir silencio para abrir el canal del navegador
+            speaker.src = SILENT_MP3;
+            speaker.play().then(() => {
+                console.log("Audio Channel Unlocked");
+            }).catch(e => {
+                console.log("Waiting for user interaction to unlock audio...");
+            });
         }
 
         function initVoice() {
@@ -237,7 +238,7 @@
         const recognitionEngine = initVoice();
         
         function toggleListening() { 
-            // 🚨 EJECUTAR DESBLOQUEO DE AUDIO INMEDIATO AL CLIC
+            // 🚨 INTENTO 2 DE DESBLOQUEO AL CLIC (ESTE ES EL QUE CUENTA)
             unlockAudioEngine();
             
             if(!apiKey) checkApiKey();
@@ -284,16 +285,17 @@
                 if (!res.ok) throw new Error("ERROR API AUDIO");
 
                 const blob = await res.blob();
-                const audio = new Audio(URL.createObjectURL(blob));
+                const audioUrl = URL.createObjectURL(blob);
                 
-                audio.onended = () => updateStateVisuals('idle');
+                // USAR EL SPEAKER DESBLOQUEADO
+                speaker.src = audioUrl;
+                speaker.onended = () => updateStateVisuals('idle');
                 
-                // Intento robusto de reproducción
                 try {
-                    await audio.play();
+                    await speaker.play();
                 } catch (playErr) {
                     console.error("Bloqueo persistente:", playErr);
-                    updateStateVisuals('error', "AUDIO BLOQUEADO POR NAVEGADOR");
+                    updateStateVisuals('error', "AUDIO BLOQUEADO: TOCA LA PANTALLA");
                 }
 
             } catch (err) {
